@@ -18,44 +18,74 @@
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
+    <!-- Modified navbar header from Bootstrap: https://getbootstrap.com/docs/5.3/components/navbar/ -->
     <div id="header">
-      <!-- Modified hero from Bootstrap: https://getbootstrap.com/docs/5.3/examples/heroes/ -->
-      <div class="gradient-background">
-        <div class="container col-xxl-8 px-4 py-5">
-          <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
-            <div class="col-10 col-sm-8 col-lg-6">
-              <img
-                src="assets/images/woman cooling down outlined.png"
-                class="d-block mx-lg-auto img-fluid rounded"
-                alt="A woman cooling down using a fan"
-                height="450"
-                loading="lazy"
-              />
-            </div>
-            <div class="col-lg-6">
-              <h1 class="display-5 fw-bold text-body-emphasis lh-1 mb-3">
-                What is the Arm Bazooka Project?
-              </h1>
-              <p class="lead">
-                A VR project where you can detach your arm from your body by firing it. When it hits a surface, it'll stick, and you can continue using your arm at that location.<br />
-                The aim is to see how well this would allow for distant object manipulation, when compared to more traditional methods such as a laser.<br />
-              </p>
-              <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-                <a
-                  role="button"
-                  href="pages/page1"
-                  class="btn btn-light btn-lg px-4 me-med-2"
-                >
-                  Button 1
-                </a>
-                <a
-                  role="button"
-                  href="pages/page2"
-                  class="btn btn-outline-light btn-lg px-4"
-                >
-                  Button 2
-                </a>
-              </div>
+      <nav class="navbar navbar-expand-lg bg-body-tertiary fixed-top" id="top-navbar">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="/">P8 project</a>
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link active" href="">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="pages/page1">Documentation</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="pages/page2">Gallery</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+    </div>
+    <!-- Modified hero from Bootstrap: https://getbootstrap.com/docs/5.3/examples/heroes/ -->
+    <div class="gradient-background">
+      <div class="container col-xxl-8 px-4 py-5">
+        <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
+          <div class="col-10 col-sm-8 col-lg-6">
+            <img
+              src="assets/images/woman cooling down outlined.png"
+              class="d-block mx-lg-auto img-fluid rounded"
+              alt="A woman cooling down using a fan"
+              height="450"
+              loading="lazy"
+            />
+          </div>
+          <div class="col-lg-6">
+            <h1 class="display-5 fw-bold text-body-emphasis lh-1 mb-3">
+              What is the Arm Bazooka Project?
+            </h1>
+            <p class="lead">
+              A VR project where you can detach your arm from your body by firing it. When it hits a surface, it'll stick, and you can continue using your arm at that location.<br />
+              The aim is to see how well this would allow for distant object manipulation, when compared to more traditional methods such as a laser.<br />
+            </p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+              <a
+                role="button"
+                href="pages/page1"
+                class="btn btn-light btn-lg px-4 me-med-2"
+              >
+                Button 1
+              </a>
+              <a
+                role="button"
+                href="https://github.com/DeadPieGamer/P8-Project"
+                class="btn btn-outline-light btn-lg px-4"
+              >
+                Github
+              </a>
             </div>
           </div>
         </div>
