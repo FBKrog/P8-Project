@@ -1816,8 +1816,8 @@
     "m_ObjectId": "25d9d7eb6247435aa80a7bb74ca1a8f2",
     "m_Title": "New Group",
     "m_Position": {
-        "x": -1841.0,
-        "y": 760.0000610351563
+        "x": -1841.0001220703125,
+        "y": 760.0
     }
 }
 
@@ -2727,7 +2727,7 @@
     "m_ZTestMode": 4,
     "m_ZWriteControl": 0,
     "m_AlphaMode": 0,
-    "m_RenderFace": 1,
+    "m_RenderFace": 0,
     "m_AlphaClip": false,
     "m_CastShadows": false,
     "m_ReceiveShadows": true,
@@ -4461,7 +4461,7 @@
     "m_ObjectId": "984a40bb4ec24c8da242b99ff25fd941",
     "m_Title": "JiggleGuys (VIRKER IKKE (Tror også det er fine uden tror i hvertfald godt man kan lave noget magi med resten)",
     "m_Position": {
-        "x": -3556.000244140625,
+        "x": -3555.99951171875,
         "y": -1492.0
     }
 }
@@ -5789,8 +5789,8 @@
     "m_ObjectId": "d4a20f38d714495fa0bbc17da1a5a3d6",
     "m_Title": "New Group",
     "m_Position": {
-        "x": -1993.0001220703125,
-        "y": -245.0
+        "x": -1992.9998779296875,
+        "y": -245.00006103515626
     }
 }
 
