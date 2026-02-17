@@ -21,7 +21,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: ThrusterMat
-  m_Shader: {fileID: -6465566751694194690, guid: 6470b604182017e4f82e6fd07473c108, type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: 44f5942ca142cb145b98dbad37e45f00, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -52,13 +52,14 @@ Material:
     m_Ints: []
     m_Floats:
     - _EnginePower: 1
+    - _FlamePulse: 4
+    - _JiggleStrength: 0.5
     - _NoiseTilling: 0.149
     - _Noise_Speed: 1.15
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _Thrust: 0.41
+    - _Thrust: 0.42
     m_Colors:
-    - _ColorThrust: {r: 1.4124954, g: 0.347411, b: 0, a: 1}
-    - _Vector2: {r: 1, g: 0.2, b: 0, a: 0}
+    - _ColorThrust: {r: 47.937256, g: 3.8810368, b: 0, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
