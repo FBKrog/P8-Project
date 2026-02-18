@@ -6,7 +6,15 @@ public class TeleportationActivator : MonoBehaviour
 {
     public XRRayInteractor teleportInteractor;
     public InputActionProperty teleportActivatorAction;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+
+    /// <summary>
+    /// Optional hook called when the user releases the teleport button while aiming
+    /// at a valid target. The supplied Action, when invoked, performs the actual
+    /// teleport (SetActive false on the interactor). If null, the teleport fires
+    /// immediately — original behaviour is preserved.
+    /// </summary>
+    public System.Action<System.Action> onBeforeTeleport;
+
     void Start()
     {
         teleportInteractor.gameObject.SetActive(false);
@@ -17,13 +25,20 @@ public class TeleportationActivator : MonoBehaviour
     {
         teleportInteractor.gameObject.SetActive(true);
     }
-    
-    // Update is called once per frame
+
     void Update()
     {
-        if (teleportActivatorAction.action.WasReleasedThisFrame())
-        {
-            teleportInteractor.gameObject.SetActive(false);
-        }
+        if (!teleportActivatorAction.action.WasReleasedThisFrame())
+            return;
+
+        if (onBeforeTeleport != null)
+            onBeforeTeleport(ExecuteTeleport);
+        else
+            ExecuteTeleport();
+    }
+
+    private void ExecuteTeleport()
+    {
+        teleportInteractor.gameObject.SetActive(false);
     }
 }
