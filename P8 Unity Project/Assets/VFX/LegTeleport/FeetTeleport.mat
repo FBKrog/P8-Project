@@ -7,13 +7,12 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: LegTeleportMat
-  m_Shader: {fileID: -6465566751694194690, guid: b03681cfdecce7a4fa478dc530ae1ce1, type: 3}
+  m_Name: FeetTeleport
+  m_Shader: {fileID: -6465566751694194690, guid: 77e0c4cd34276674990396f49d5b6a5f, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
-  m_InvalidKeywords:
-  - _ALPHATEST_ON
+  m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -25,14 +24,6 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
-    - _MainTex:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _SampleTexture2D_edeb39282b0a458f85f7de78e23f3a87_Texture_1_Texture2D:
-        m_Texture: {fileID: 2800000, guid: 3c4e2a2fd091b8f4185678c8709b2974, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -47,16 +38,13 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _AlphaClip: 0.5
-    - _DissolveAmmount: 0.5
     - _QueueControl: 0
     - _QueueOffset: 0
     m_Colors:
-    - _BaseColor: {r: 0.8039216, g: 0.8509804, b: 0.18039218, a: 1}
-    - _Color: {r: 0, g: 0, b: 0, a: 1}
+    - _Color: {r: 3.0943396, g: 2.8579319, b: 0.97792804, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
---- !u!114 &3566563591906195939
+--- !u!114 &3404011788112136343
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}
