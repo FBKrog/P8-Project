@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Drawing;
 using UnityEngine;
 
 public class DAOMArm : MonoBehaviour
@@ -10,9 +11,19 @@ public class DAOMArm : MonoBehaviour
     [Header("DAOM")]
     [SerializeField] GameObject daomRoot;
     [SerializeField] GameObject daomIKTarget;
-    [SerializeField] [Tooltip("Only shown for debugging purposes")] bool isTraveling = false;
-    [SerializeField] [Tooltip("Only shown for debugging purposes")] bool isAttachedToSurface = false;
-    [SerializeField] [Tooltip("Only shown for debugging purposes")] bool recalling = false;
+    [SerializeField] float travelTime = 1f;
+    [SerializeField] float rotationTime = 0.5f;
+
+    Quaternion targetRot;
+    Quaternion startRot;
+
+    bool isTraveling = false;
+
+    bool isAttachedToSurface = false;
+    public bool IsAttachedToSurface => isAttachedToSurface;
+
+    bool recalling = false;
+    public bool Recalling => recalling;
 
     public void Initialize(GameObject root, GameObject IKTarget, Vector3 point, Vector3 normal)
     {
@@ -21,49 +32,72 @@ public class DAOMArm : MonoBehaviour
         StartCoroutine(TravelToPoint(point, normal));
     }
 
+    public void RecallArm(Vector3 point, Vector3 normal)
+    {
+        if (isTraveling) return;
+        if (!isAttachedToSurface) return;
+        if (recalling) return;
+        recalling = true;
+        StartCoroutine(TravelToPoint(point, normal));
+        StartCoroutine(RotateToNormal());
+    }
+
     IEnumerator TravelToPoint(Vector3 point, Vector3 normal)
     {
-        Debug.Log("Traveling to point: " + point + " with normal: " + normal);
         if (isTraveling) yield break;
         isTraveling = true;
         Vector3 startPos = transform.position;
-        Quaternion startRot = transform.rotation;
-        Quaternion targetRot = Quaternion.LookRotation(normal);
-        float travelTime = 1f;
+
+        startRot = transform.rotation;
+        targetRot = Quaternion.LookRotation(normal);
+
         float elapsedTime = 0f;
         while (true) {
             elapsedTime += Time.deltaTime;
             float t = Mathf.Clamp01(elapsedTime / travelTime);
             transform.position = Vector3.Lerp(startPos, point, t);
-            transform.rotation = Quaternion.Slerp(startRot, targetRot, t);
-            if (t >= 1f) break;
-            if (recalling)
+            if (elapsedTime >= travelTime) 
             {
-                Destroy(gameObject);
-                yield break;
+                ArmAttaching();
+                break;
             }
-            isTraveling = false;
-            isAttachedToSurface = true;
             yield return null;
+        }
+        yield break;
+    }
+
+    void ArmAttaching()
+    {
+        isTraveling = false;
+        isAttachedToSurface = true;
+        StartCoroutine(RotateToNormal());
+        if (recalling)
+        {
+            LaunchArm.ArmRecalled();
+            return;
         }
     }
 
-    public void RecallArm(Vector3 point, Vector3 normal)
+    IEnumerator RotateToNormal()
     {
-        if (isTraveling || !isAttachedToSurface || recalling) return;
-        recalling = true;
-        isAttachedToSurface = false;
-        StartCoroutine(TravelToPoint(point, normal));
-    }
-
-    void FindPlayerHand()
-    {
-        // TODO: Find the player hand transform in the hierarchy, instead of assigning it in the inspector, and assign it to the playerHand variable - maybe through an event.
+        float elapsedTime = 0f;
+        while (true)
+        {
+            elapsedTime += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsedTime / rotationTime);
+            transform.rotation = Quaternion.Slerp(startRot, targetRot, t);
+            if (elapsedTime >= travelTime)
+            {
+                break;
+            }
+            yield return null;
+        }
+        yield break;
     }
 
     void LateUpdate()
     {
-        if (!isAttachedToSurface) return;       
+        if (!isAttachedToSurface || recalling) return;       
         TransformToPlayerHand();
         RotateToPlayerHand();
     }

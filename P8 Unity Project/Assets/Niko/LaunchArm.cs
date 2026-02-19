@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class LaunchArm : MonoBehaviour
@@ -18,7 +19,28 @@ public class LaunchArm : MonoBehaviour
 
     bool canLaunch = true;
 
+    public static Action OnArmRecalled;
+    public static void ArmRecalled() => OnArmRecalled?.Invoke();
 
+    void OnEnable()
+    {
+        OnArmRecalled += RemoveDAOMArm;
+    }
+
+    void OnDisable()
+    {
+        OnArmRecalled -= RemoveDAOMArm;
+    }
+
+    void RemoveDAOMArm()
+    {
+        if (daomArm != null)
+        {
+            Destroy(daomArm);
+            daomArm = null;
+            canLaunch = true;
+        }
+    }
 
     void Update()
     {
@@ -33,8 +55,6 @@ public class LaunchArm : MonoBehaviour
     {
         if (Physics.Raycast(transform.position, transform.forward, out hit, rayLength, surfaceLayer))
         {
-            Debug.Log("Hit: " + hit.collider.name);
-            // Implement launch logic here
             return true;
         }
         return false;
@@ -51,27 +71,35 @@ public class LaunchArm : MonoBehaviour
         }
         if(canLaunch && ValidLayer())
         {
+            if(daomArm != null)
+            {
+                if(!daomArm.GetComponent<DAOMArm>().Recalling)
+                {
+                    Debug.Log("Arm is recalling, cannot launch!");
+                    return;
+                }
+            }
             canLaunch = false;
-            ToggleArmInteraction(false);
-            daomArm = Instantiate(LaunchedArmPrefab, launchPoint.transform.position, launchPoint.transform.rotation);
-            daomArm.GetComponent<DAOMArm>().Initialize(armRoot, armIKTarget, hit.point, hit.normal);
-            Debug.Log("Launching arm!");
+            if(daomArm == null)
+            {
+                daomArm = Instantiate(LaunchedArmPrefab, launchPoint.transform.position, launchPoint.transform.rotation);
+                daomArm.GetComponent<DAOMArm>().Initialize(armRoot, armIKTarget, hit.point, hit.normal);
+            }
         }
     }
 
     void ResetArm()
     {
-        daomArm.GetComponent<DAOMArm>().RecallArm(launchPoint.transform.position, launchPoint.transform.forward);
-        Debug.Log("Resetting arm!");
-        ToggleArmInteraction(true);
-        canLaunch = true;
+        if (daomArm != null)
+        {
+            if (!daomArm.GetComponent<DAOMArm>().IsAttachedToSurface)
+            {
+                Debug.Log("Arm is not attached to surface, cannot reset!");
+                return;
+            }
+            daomArm.GetComponent<DAOMArm>().RecallArm(launchPoint.transform.position, launchPoint.transform.forward);
+        }
     }
-
-    void ToggleArmInteraction(bool state)
-    {
-        Debug.Log("Toggling arm interaction: " + state);
-    }
-
 
     void OnDrawGizmos()
     {

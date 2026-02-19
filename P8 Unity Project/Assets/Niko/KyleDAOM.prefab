@@ -628,6 +628,8 @@ MonoBehaviour:
   playerIKTarget: {fileID: 0}
   daomRoot: {fileID: 1909204288033439780}
   daomIKTarget: {fileID: 7511125536317497053}
+  travelTime: 0.3
+  rotationTime: 0.1
 --- !u!114 &6513172830697547232
 MonoBehaviour:
   m_ObjectHideFlags: 0
