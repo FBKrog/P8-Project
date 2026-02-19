@@ -48,21 +48,21 @@ Material:
     m_Floats:
     - _AlphaClip: 0
     - _DissolveAmmount: 0.5
-    - _Line_Frequency: 10
-    - _Line_Thickness: 0.176
+    - _Line_Frequency: 8
+    - _Line_Thickness: 0.35
     - _Line_size: 0.1
-    - _Movement: 0.5
+    - _Movement: 1
     - _QueueControl: 0
     - _QueueOffset: 0
     m_Colors:
-    - _BackgroundColor: {r: 0.18039209, g: 0.8039216, b: 0.25655395, a: 0.52156866}
-    - _BackgroundEmission: {r: 0.15362659, g: 0.6520596, b: 0.13840887, a: 0}
+    - _BackgroundColor: {r: 0, g: 0, b: 0, a: 0.52156866}
+    - _BackgroundEmission: {r: 2.3662598, g: 1.3734014, b: 0.531292, a: 0}
     - _BaseColor: {r: 0.8039216, g: 0.8509804, b: 0.18039218, a: 1}
     - _Color: {r: 0, g: 0, b: 0, a: 1}
     - _Emission: {r: 4.682229, g: 6.701533, b: 1.422495, a: 0}
-    - _HeightCutoff: {r: -2.65, g: -0.85, b: 0, a: 0}
-    - _LineColor: {r: 0.8039216, g: 0.8509804, b: 0.18039218, a: 0.7176471}
-    - _LineEmission: {r: 2.577156, g: 3.6886058, b: 0.7829587, a: 0}
+    - _HeightCutoff: {r: -2.65, g: -0.88, b: 0, a: 0}
+    - _LineColor: {r: 1, g: 0.92999226, b: 0.76037735, a: 0.7176471}
+    - _LineEmission: {r: 4.924578, g: 3.6983669, b: 1.7375398, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &3566563591906195939
