@@ -1,41 +1,41 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Slides a door open when every DoorTrigger in the Triggers list has been
+/// activated. Works with any number of conditions: one trigger opens immediately
+/// on that trigger; two triggers require both to be true; and so on.
+///
+/// Add a DoorTrigger component to each source object (Plug, Battery Socket, …)
+/// and wire the source's UnityEvent to DoorTrigger.Activate() in the Inspector,
+/// then add each DoorTrigger to this component's Triggers list.
+/// </summary>
 public class DoorLinker : MonoBehaviour
 {
-    [Header("References")]
-    [Tooltip("The PlugController to listen to. Auto-found by 'Plug' tag if left empty.")]
-    [SerializeField] private PlugController plug;
+    [Header("Triggers — ALL must be activated to open the door")]
+    [SerializeField] private List<DoorTrigger> triggers = new();
 
+    [Header("Door Panels")]
     [Tooltip("Left door panel. Auto-found as first child of the 'Door' tagged object if left empty.")]
     [SerializeField] private Transform leftPanel;
-
     [Tooltip("Right door panel. Auto-found as second child of the 'Door' tagged object if left empty.")]
     [SerializeField] private Transform rightPanel;
 
     [Header("Slide Settings")]
-    [Tooltip("How far each panel slides in its direction (in local units).")]
+    [Tooltip("How far each panel slides in its direction (local units).")]
     [SerializeField] private float slideDistance = 1.5f;
-
     [Tooltip("How long the slide animation takes in seconds.")]
     [SerializeField] private float slideDuration = 0.8f;
-
     [Tooltip("Local-space axis along which the panels slide. Right panel moves positive, left panel moves negative.")]
     [SerializeField] private Vector3 slideAxis = Vector3.right;
 
     private bool _isOpen = false;
 
+    // -------------------------------------------------------------------------
+
     private void Start()
     {
-        if (plug == null)
-        {
-            GameObject plugObj = GameObject.FindGameObjectWithTag("Plug");
-            if (plugObj != null)
-                plug = plugObj.GetComponent<PlugController>();
-            else
-                Debug.LogWarning("[DoorLinker] No GameObject tagged 'Plug' found.");
-        }
-
         if (leftPanel == null || rightPanel == null)
         {
             GameObject doorObj = GameObject.FindGameObjectWithTag("Door");
@@ -43,7 +43,7 @@ public class DoorLinker : MonoBehaviour
             {
                 if (doorObj.transform.childCount >= 2)
                 {
-                    if (leftPanel == null)  leftPanel  = doorObj.transform.GetChild(0);
+                    if (leftPanel  == null) leftPanel  = doorObj.transform.GetChild(0);
                     if (rightPanel == null) rightPanel = doorObj.transform.GetChild(1);
                 }
                 else
@@ -57,20 +57,36 @@ public class DoorLinker : MonoBehaviour
             }
         }
 
-        if (plug != null)
-            plug.OnWirePlugged.AddListener(OnPlugged);
+        foreach (var trigger in triggers)
+        {
+            if (trigger != null)
+                trigger.Activated += CheckAndOpen;
+        }
     }
 
     private void OnDestroy()
     {
-        if (plug != null)
-            plug.OnWirePlugged.RemoveListener(OnPlugged);
+        foreach (var trigger in triggers)
+        {
+            if (trigger != null)
+                trigger.Activated -= CheckAndOpen;
+        }
     }
 
-    private void OnPlugged()
+    // -------------------------------------------------------------------------
+
+    private void CheckAndOpen()
     {
-        if (!_isOpen)
-            StartCoroutine(SlideDoor());
+        if (_isOpen) return;
+
+        foreach (var trigger in triggers)
+        {
+            // Any null entry or unactivated trigger blocks the door
+            if (trigger == null || !trigger.IsActivated)
+                return;
+        }
+
+        StartCoroutine(SlideDoor());
     }
 
     private IEnumerator SlideDoor()
