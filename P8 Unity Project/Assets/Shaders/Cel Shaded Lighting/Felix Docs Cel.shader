@@ -7,7 +7,7 @@ Shader "Custom/FelixDocsCel"
 
         _ShadowColor("Shadow Color", Color) = (0.075, 0, 0.15, 0.9)
         _ShadowCutoff("Shadow Cutoff", Range(0.0, 1.0)) = 0.5
-        _ShadowBlur("Shadow Edge Blur", Range(0.0, 0.1)) = 0.05
+        _ShadowBlur("Shadow Edge Blur", Range(0.0, 0.01)) = 0.002
     }
     
     SubShader
@@ -18,8 +18,8 @@ Shader "Custom/FelixDocsCel"
             "RenderPipeline" = "UniversalPipeline"
         }
         
-        Cull Off
-        ZWrite On
+        // Cull Off // Turns off backculling
+        // ZWrite On // Allows writing to the Z-buffer
         Pass
         {
             // The LightMode tag matches the ShaderPassName set in UniversalRenderPipeline.cs.
@@ -43,9 +43,10 @@ Shader "Custom/FelixDocsCel"
 
             // This multi_compile declaration is required for accessing the shadow map for the main light
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
+            #pragma multi_compile_fragment _ _SHADOWS_SOFT _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
 
             // This multi_compile declaration is required for accessing the shadow maps for additional lights
-            #pragma multi_compile _ _ADDITIONAL_LIGHT_SHADOWS
+            #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
             
             // Included as per https://docs.unity3d.com/6000.3/Documentation/Manual/urp/use-built-in-shader-methods-additional-lights-fplus.html
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
@@ -108,7 +109,9 @@ Shader "Custom/FelixDocsCel"
 
                 // Half lambert diffuse
                 float NdotL = dot(normalWS, normalize(light.direction));
-                NdotL = (NdotL + 1) * 0.5 * pow(light.distanceAttenuation, 0.1) * light.shadowAttenuation * shadowValue;
+                // Remove self-cast shadows at 0.5 or lower (75% of shadows since -1 to 1 range from dot product)
+                float alteredShadowValue = lerp(1, shadowValue, step(0.5, NdotL));
+                NdotL = (NdotL + 1) * 0.5 * pow(light.distanceAttenuation, 0.1) * light.shadowAttenuation * alteredShadowValue;
                 NdotL = saturate(NdotL);
                 NdotL = smoothstep(_ShadowCutoff, _ShadowCutoff + _ShadowBlur, NdotL);
 
