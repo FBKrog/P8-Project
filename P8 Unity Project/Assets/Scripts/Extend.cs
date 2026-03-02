@@ -16,6 +16,10 @@ public class Extend : MonoBehaviour
     public Material lineMaterial;
     public float lineWidth = 0.05f;
 
+    public bool IsExtended => state == State.Extended;
+    public Transform Hand   => hand;
+    public Vector3 ArmTip   => arm.TransformPoint(handLocalPos);
+
     private enum State { Idle, Aiming, Extending, Extended, Retracting }
     private State state = State.Idle;
 
