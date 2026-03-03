@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 public class ExtendManipulator : MonoBehaviour
 {
     [Header("References")]
-    public Extend extend;
+    public ExtendRaycast extend;
 
     [Header("Input")]
     public InputActionProperty thumbstickAction;
