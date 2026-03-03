@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class Extend : MonoBehaviour
+public class ExtendRaycast : MonoBehaviour
 {
     [Header("Input")]
     public InputActionProperty triggerAction;

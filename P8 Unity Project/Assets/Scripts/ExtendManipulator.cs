@@ -1,28 +1,5 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-
-/// <summary>
-/// Scaled HOMER hand-extension controller.
-///
-/// Hand position update per frame:
-///   Object_Position = prev_Position + (SF × V_multiplier) × ctrlDelta
-///
-/// Where:
-///   SF          = extension distance captured the moment the arm locks into Extended state (e.g. 10 m)
-///   V_multiplier = [0.1 .. 1.0] mapped from current controller velocity
-///   ctrlDelta   = per-frame controller displacement vector (encodes both direction and speed)
-///
-/// Velocity mapping:
-///   speed ≤ minVelocity  →  V_multiplier = 0.1  →  effective scale ≈ 1:1 (fine, precise control)
-///   speed ≥ maxVelocity  →  V_multiplier = 1.0  →  effective scale = 1:SF (full Homer amplification)
-///   between              →  linear interpolation
-///
-/// Note: when SF = 10 m, V_multiplier = 0.1 gives effective scale = 1.0 (exactly 1:1).
-/// The formula naturally produces near-1:1 fine control at low speed for any typical extension distance.
-///
-/// Thumbstick Y reels the hand further/closer along its facing direction (SF stays fixed).
-/// Controller rotation is mirrored onto the hand via smooth Slerp.
-/// </summary>
 public class ExtendManipulator : MonoBehaviour
 {
     [Header("References")]
@@ -103,15 +80,17 @@ public class ExtendManipulator : MonoBehaviour
         }
 
         // ----------------------------------------------------------------
-        // 3. Reeling — thumbstick Y moves hand along its facing direction
+        // 3. Reeling — thumbstick Y moves hand along the arm-to-hand vector
+        //    (the direction the arm is extended), not the hand's facing direction.
         //    SF is intentionally NOT updated here so the Homer scale stays
         //    relative to the original grab distance regardless of reel depth.
         // ----------------------------------------------------------------
         float stick = thumbstickAction.action.ReadValue<Vector2>().y;
         if (Mathf.Abs(stick) > 0.1f)
         {
-            Vector3 newPos = hand.position + hand.forward * stick * reelSpeed * Time.deltaTime;
-            hand.position  = ClampToSphere(newPos, armTip);
+            Vector3 reelDir = (hand.position - armTip).normalized;
+            Vector3 newPos  = hand.position + reelDir * stick * reelSpeed * Time.deltaTime;
+            hand.position   = ClampToSphere(newPos, armTip);
         }
     }
 
