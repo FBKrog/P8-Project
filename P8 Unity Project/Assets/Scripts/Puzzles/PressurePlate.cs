@@ -2,10 +2,9 @@ using UnityEngine;
 using UnityEngine.Events;
 
 /// <summary>
-/// Attach to a pressure plate. Fires OnPlateActivated when the correct block
-/// (one whose PressureLinker.TargetPlate == this) enters the trigger volume,
-/// and OnPlateDeactivated when it leaves. Wire these to DoorTrigger.Activate()
-/// / Deactivate() in the Inspector to integrate with the door system.
+/// Attach to a pressure plate.
+/// Fires OnPlateActivated when the correct object enters the trigger volume, and OnPlateDeactivated when it leaves.
+/// Wire these to DoorTrigger.Activate() / Deactivate() in the Inspector to integrate with the door system.
 /// </summary>
 public class PressurePlate : MonoBehaviour
 {
