@@ -4042,7 +4042,8 @@ MonoBehaviour:
   launchRotation: {x: -180, y: -90, z: 0}
   interactor: {fileID: 421134856891243549}
   launchInput: {fileID: 83097790271614945, guid: c348712bda248c246b8c49b3db54643f, type: 3}
-  aiming: 1
+  aimInput: {fileID: 7904272356298805229, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+  aiming: 0
   canLaunch: 1
 --- !u!120 &754777551449745670
 LineRenderer:

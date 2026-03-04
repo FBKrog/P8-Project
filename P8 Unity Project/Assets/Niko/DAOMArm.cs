@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using UnityEngine;
-using UnityEngine.Animations.Rigging;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
@@ -38,7 +37,9 @@ public class DAOMArm : MonoBehaviour
 
     Quaternion lowerArmStartRot;
     int dumbfix = 0;
+
     IXRSelectInteractable selectedInteractable;
+    IXRSelectInteractable hitInteractable;
 
 
     [SerializeField]bool isTraveling = false;
@@ -85,12 +86,15 @@ public class DAOMArm : MonoBehaviour
 
         if(interactor != null && interactable != null)
         {
-            interactor.interactionManager.SelectEnter(interactor, interactable);
             selectedInteractable = interactable;
+            interactor.interactionManager.SelectEnter(interactor, selectedInteractable);
             interactor.selectActionTrigger = XRBaseInputInteractor.InputTriggerType.Sticky;
         }
-
-        StartCoroutine(TravelToPoint(point, normal, hitInteractable));
+        if(hitInteractable != null)
+        {
+            this.hitInteractable = hitInteractable;
+        }
+        StartCoroutine(TravelToPoint(point, normal));
     }
 
     /// <summary>
@@ -104,6 +108,10 @@ public class DAOMArm : MonoBehaviour
         recalling = true;
 
         interactor.selectActionTrigger = XRBaseInputInteractor.InputTriggerType.Sticky;
+        if(hitInteractable != null)
+        {
+            selectedInteractable = hitInteractable;
+        }
         LaunchArm.OnGrabbedGameObject(selectedInteractable);
         
         StartCoroutine(TravelToGameObject(goPoint, normal));
@@ -113,12 +121,11 @@ public class DAOMArm : MonoBehaviour
     /// <summary>
     /// Moves the object smoothly to the specified POSITION while storing the given surface normal in a variable for later use.
     /// </summary>
-    IEnumerator TravelToPoint(Vector3 point, Vector3 normal, IXRSelectInteractable interactable)
+    IEnumerator TravelToPoint(Vector3 point, Vector3 normal)
     {
         if (isTraveling) yield break;
         isTraveling = true;
 
-        selectedInteractable = interactable;
         
         extendedArmPart.SetActive(false);
 
@@ -201,13 +208,16 @@ public class DAOMArm : MonoBehaviour
         isAttachedToSurface = true;
 
         // If the arm hit an interactable, recall the arm WITH the interactable so the player holds it after recall.
-        if (selectedInteractable != null && !recalling)
+        if (hitInteractable != null && !recalling)
         {
             LaunchArm.OnEarlyRecall();
-            interactor.interactionManager.SelectEnter(interactor, selectedInteractable);
+            interactor.interactionManager.SelectEnter(interactor, hitInteractable);
+            interactor.selectActionTrigger = XRBaseInputInteractor.InputTriggerType.Sticky;
             return;
         }
 
+        interactor.selectActionTrigger = XRBaseInputInteractor.InputTriggerType.StateChange;
+        RigAnimator.enabled = true;
         extendedArmPart.SetActive(true);
 
         StartCoroutine(RotateToNormal(gameObject.transform, startRot, targetRot, rotationDuration));
@@ -235,11 +245,6 @@ public class DAOMArm : MonoBehaviour
             }
             yield return null;
         }
-
-        // When arm is good to go, enable animator and set the interactor to act normally so the player can grab things with it.
-        interactor.selectActionTrigger = XRBaseInputInteractor.InputTriggerType.StateChange;
-        RigAnimator.enabled = true;
-
         yield break;
     }
 

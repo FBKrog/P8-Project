@@ -1,5 +1,4 @@
 using System;
-using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
@@ -64,8 +63,8 @@ public class LaunchArm : MonoBehaviour
         GrabbedGameObject += AddGrabbedGameObject;
 
         // Input
-        interactor.selectExited.AddListener(args => carriedInteractable = null);
         interactor.selectEntered.AddListener(OnGrab);
+        interactor.selectExited.AddListener(args => carriedInteractable = null);
         
         launchInput.action.performed += ctx => Launch();
         
@@ -143,6 +142,7 @@ public class LaunchArm : MonoBehaviour
         interactor.enabled = true;
         if (daomInteractable != null)
         {
+            carriedInteractable = daomInteractable;
             interactor.interactionManager.SelectEnter(interactor, daomInteractable);
         }
         daomInteractable = null;
@@ -166,6 +166,11 @@ public class LaunchArm : MonoBehaviour
     {
         if (aiming && Physics.Raycast(transform.position, transform.forward, out hit, rayLength, surfaceLayer))
         {
+            if (hit.collider.gameObject.transform.parent.TryGetComponent(out XRGrabInteractable interactable) && carriedInteractable != null)
+            {
+                Debug.Log($"Cannot launch arm at grabable({interactable}) due to the player holding an interactble already.");
+                return false;
+            }
             return true;
         }
         return false;
@@ -194,12 +199,13 @@ public class LaunchArm : MonoBehaviour
             canLaunch = false;
             aiming = false;
             interactor.keepSelectedTargetValid = true;
-            if (hit.collider.gameObject.transform.parent.TryGetComponent(out XRGrabInteractable interactable) && carriedInteractable == null)
+            
+            if (hit.collider.gameObject.transform.parent.TryGetComponent(out XRGrabInteractable hitInteractable) && carriedInteractable == null)
             {
-                hitInteractable = interactable;
+                this.hitInteractable = hitInteractable;
             }
             daomArm = Instantiate(daomArmPrefab, launchPoint.transform.position, Quaternion.Euler(launchRotation));
-            daomArm.GetComponent<DAOMArm>().Initialize(armRoot, armIKTarget, hit.point, hit.normal, hitInteractable, carriedInteractable);
+            daomArm.GetComponent<DAOMArm>().Initialize(armRoot, armIKTarget, hit.point, hit.normal, this.hitInteractable, carriedInteractable);
             OnSetInteractorHandedness(interactor);
             interactor.enabled = false;
         }
