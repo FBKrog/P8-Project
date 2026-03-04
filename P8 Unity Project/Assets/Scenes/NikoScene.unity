@@ -1064,6 +1064,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 474309871}
   m_CullTransparentMesh: 1
+--- !u!1 &483261547 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7711461588113745361, guid: e96aac9f1354d3a418816a46162af66d, type: 3}
+  m_PrefabInstance: {fileID: 3804693558814217496}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &490745891
 GameObject:
   m_ObjectHideFlags: 0
@@ -7534,6 +7539,26 @@ PrefabInstance:
     - target: {fileID: 4947071758652482644, guid: e96aac9f1354d3a418816a46162af66d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4962339782879025641, guid: e96aac9f1354d3a418816a46162af66d, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4962339782879025641, guid: e96aac9f1354d3a418816a46162af66d, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4962339782879025641, guid: e96aac9f1354d3a418816a46162af66d, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8259072569663372555, guid: e96aac9f1354d3a418816a46162af66d, type: 3}
+      propertyPath: armGameObject
+      value: 
+      objectReference: {fileID: 483261547}
+    - target: {fileID: 8259072569663372555, guid: e96aac9f1354d3a418816a46162af66d, type: 3}
+      propertyPath: surfaceLayer.m_Bits
+      value: 256
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

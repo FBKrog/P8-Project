@@ -252,7 +252,7 @@ MonoBehaviour:
   daomIKTarget: {fileID: 4056231379922148810}
   RigAnimator: {fileID: 6896211590706816729}
   extendedArmPart: {fileID: 3648959258249411169}
-  travelDuration: 1
+  travelSpeed: 8
   lowerArm: {fileID: 3039316450757920571}
   rotationStartTime: 0.7
   rotationDuration: 0.3

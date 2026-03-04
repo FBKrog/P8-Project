@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Drawing;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
@@ -17,7 +18,7 @@ public class DAOMArm : MonoBehaviour
     [SerializeField] GameObject extendedArmPart;
 
     [Header("Travel")]
-    [SerializeField] [Tooltip("The time it takes the arm to travel from the body to the surface and vice-versa.")] float travelDuration = 1f;
+    [SerializeField] [Tooltip("The time it takes the arm to travel from the body to the surface and vice-versa.")] float travelSpeed = 1f;
 
 
     [Header("Rotation")]
@@ -126,7 +127,6 @@ public class DAOMArm : MonoBehaviour
         if (isTraveling) yield break;
         isTraveling = true;
 
-        
         extendedArmPart.SetActive(false);
 
         Vector3 startPos = transform.position;
@@ -134,23 +134,23 @@ public class DAOMArm : MonoBehaviour
         startRot = transform.rotation;
         targetRot = Quaternion.LookRotation(normal);
 
-        float elapsedTime = 0f;
-        while (true) {
-            elapsedTime += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsedTime / travelDuration);
-            if (t >= rotationStartTime)
+        float totalDistance = Vector3.Distance(startPos, point);
+        float traveledDistance = 0f;
+
+        while (traveledDistance < totalDistance)
+        {
+            float distanceDelta = travelSpeed * Time.deltaTime;
+            transform.position = Vector3.MoveTowards(transform.position, point, distanceDelta);
+            traveledDistance += distanceDelta;
+            float d = traveledDistance / totalDistance;
+
+            if (d >= rotationStartTime)
             {
                 PrepareSurfaceLanding();
             }
-            transform.position = Vector3.Lerp(startPos, point, t);
-            if (elapsedTime >= travelDuration) 
-            {
-                ArmAttaching();
-                break;
-            }
             yield return null;
         }
-        yield break;
+        ArmAttaching();
     }
 
     /// <summary>
@@ -168,24 +168,23 @@ public class DAOMArm : MonoBehaviour
         startRot = transform.rotation;
         targetRot = Quaternion.LookRotation(normal);
 
-        float elapsedTime = 0f;
-        while (true)
+        float totalDistance = Vector3.Distance(startPos, goPoint.transform.position);
+        float traveledDistance = 0f;
+
+        while (traveledDistance < totalDistance)
         {
-            elapsedTime += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsedTime / travelDuration);
-            if (t >= rotationStartTime)
+            float distanceDelta = travelSpeed * Time.deltaTime;
+            transform.position = Vector3.MoveTowards(transform.position, goPoint.transform.position, distanceDelta);
+            traveledDistance += distanceDelta;
+            float d = traveledDistance / totalDistance;
+
+            if (d >= rotationStartTime)
             {
                 PrepareSurfaceLanding();
             }
-            transform.position = Vector3.Lerp(startPos, goPoint.transform.position, t);
-            if (elapsedTime >= travelDuration)
-            {
-                ArmAttaching();
-                break;
-            }
             yield return null;
         }
-        yield break;
+        ArmAttaching();
     }
 
     void PrepareSurfaceLanding()

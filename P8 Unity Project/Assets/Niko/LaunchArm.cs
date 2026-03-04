@@ -15,6 +15,7 @@ public class LaunchArm : MonoBehaviour
     [Header("Firing Arm")]
     [SerializeField] GameObject armRoot;
     [SerializeField] GameObject armIKTarget;
+    [SerializeField] GameObject armGameObject;
 
     [Header("Launched Arm")]
     [SerializeField] GameObject daomArmPrefab;
@@ -134,6 +135,7 @@ public class LaunchArm : MonoBehaviour
             daomArm = null;
             canLaunch = true;
             ForceGrabInteractable();
+            armGameObject.transform.localScale = Vector3.one;
         }
     }
 
@@ -204,6 +206,9 @@ public class LaunchArm : MonoBehaviour
             {
                 this.hitInteractable = hitInteractable;
             }
+
+            armGameObject.transform.localScale = Vector3.zero;
+
             daomArm = Instantiate(daomArmPrefab, launchPoint.transform.position, Quaternion.Euler(launchRotation));
             daomArm.GetComponent<DAOMArm>().Initialize(armRoot, armIKTarget, hit.point, hit.normal, this.hitInteractable, carriedInteractable);
             OnSetInteractorHandedness(interactor);
