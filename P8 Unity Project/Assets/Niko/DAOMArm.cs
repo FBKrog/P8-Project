@@ -59,8 +59,13 @@ public class DAOMArm : MonoBehaviour
     void OnDisable()
     {
         LaunchArm.SetInteractorHandedness -= GetHandedness;
+        interactor.selectEntered.RemoveListener(OnGrab);
+        interactor.selectExited.RemoveListener(args => selectedInteractable = null);
     }
 
+    /// <summary>
+    /// The handedness of the interactor and input is set relative to the hand the player used to launch the arm.
+    /// </summary>
     void GetHandedness(XRDirectInteractor interactor)
     {
         this.interactor.handedness = interactor.handedness;
@@ -74,8 +79,7 @@ public class DAOMArm : MonoBehaviour
     }
 
     /// <summary>
-    /// Initializes the player by setting the root and inverse kinematics (IK) target, and begins movement toward the
-    /// specified point.
+    /// Initializes a bunch of variables sent by the player, setting the root, IK and more. It then begins movement toward the specified point.
     /// </summary>
     public void Initialize(GameObject root, GameObject IKTarget, Vector3 point, Vector3 normal, IXRSelectInteractable hitInteractable = null, IXRSelectInteractable interactable = null)
     {
@@ -116,11 +120,11 @@ public class DAOMArm : MonoBehaviour
         LaunchArm.OnGrabbedGameObject(selectedInteractable);
         
         StartCoroutine(TravelToGameObject(goPoint, normal));
-        StartCoroutine(RotateToNormal(transform, startRot, targetRot, rotationDuration));
+        StartCoroutine(RotateToTargetRotation(transform, startRot, targetRot, rotationDuration));
     }
 
     /// <summary>
-    /// Moves the object smoothly to the specified POSITION while storing the given surface normal in a variable for later use.
+    /// Moves the GameObject smoothly to the specified POSITION while storing the given surface normal in a variable for later use.
     /// </summary>
     IEnumerator TravelToPoint(Vector3 point, Vector3 normal)
     {
@@ -154,7 +158,7 @@ public class DAOMArm : MonoBehaviour
     }
 
     /// <summary>
-    /// Moves the object smoothly to the specified GAMEOBJECT while storing the given surface normal in a variable for later use.
+    /// Moves the GameObject smoothly to the specified GAMEOBJECT'S POSITION while storing the given surface normal in a variable for later use.
     /// </summary>
     IEnumerator TravelToGameObject(GameObject goPoint, Vector3 normal)
     {
@@ -193,7 +197,7 @@ public class DAOMArm : MonoBehaviour
         {
             lowerArmStartRot = lowerArm.transform.rotation;
             var targetRotation = Quaternion.Euler(new Vector3(90,0,0)); // The arm model is rotated funky, so this is a hardcoded fix to make it look like the arm is bending at the elbow as it approaches the surface. This is really scuffed and should be replaced with a better solution ¯\_(ツ)_/¯
-            StartCoroutine(RotateToNormal(lowerArm.transform, lowerArmStartRot, targetRotation, rotationDuration));
+            StartCoroutine(RotateToTargetRotation(lowerArm.transform, lowerArmStartRot, targetRotation, rotationDuration));
             dumbfix++;
         }
     }
@@ -219,7 +223,7 @@ public class DAOMArm : MonoBehaviour
         RigAnimator.enabled = true;
         extendedArmPart.SetActive(true);
 
-        StartCoroutine(RotateToNormal(gameObject.transform, startRot, targetRot, rotationDuration));
+        StartCoroutine(RotateToTargetRotation(gameObject.transform, startRot, targetRot, rotationDuration));
         if (recalling)
         {
             LaunchArm.OnArmRecalled();
@@ -230,7 +234,7 @@ public class DAOMArm : MonoBehaviour
     /// <summary>
     /// Rotates the object from its current orientation to the target rotation over a specified duration.
     /// </summary>
-    IEnumerator RotateToNormal(Transform transform, Quaternion startRot, Quaternion targetRot, float duration)
+    IEnumerator RotateToTargetRotation(Transform transform, Quaternion startRot, Quaternion targetRot, float duration)
     {
         float elapsedTime = 0f;
         while (true)
@@ -265,9 +269,9 @@ public class DAOMArm : MonoBehaviour
 
         if(mirror)
         {
-            // Mirror on x-axis.
             playerHandOffset.x *= -1;
-            //playerHandOffset.z *= -1; // Mirror on z-axis will 
+            //playerHandOffset.y *= -1;
+            //playerHandOffset.z *= -1;
         }
 
         // Original solution that doesn't compensate for scaled daom parent :( 
@@ -297,10 +301,7 @@ public class DAOMArm : MonoBehaviour
         Quaternion relativeRot = Quaternion.Inverse(playerRoot.transform.rotation) * playerIKTarget.transform.rotation * Quaternion.Euler(rotationOffset);
 
         if(mirror)
-        {
-            // Mirror on y-axis.
-            //relativeRot = Quaternion.AngleAxis(180f, Vector3.up) * relativeRot;
-            
+        {   
             Vector3 euler = relativeRot.eulerAngles;
             euler.y *= -1;
             euler.z *= -1;
