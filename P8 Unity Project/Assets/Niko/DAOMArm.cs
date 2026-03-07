@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Drawing;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
@@ -18,8 +17,7 @@ public class DAOMArm : MonoBehaviour
     [SerializeField] GameObject extendedArmPart;
 
     [Header("Travel")]
-    [SerializeField] [Tooltip("The time it takes the arm to travel from the body to the surface and vice-versa.")] float travelSpeed = 1f;
-
+    [SerializeField][Tooltip("The time it takes the arm to travel from the body to the surface and vice-versa.")] float travelSpeed = 1f;
 
     [Header("Rotation")]
     [SerializeField] GameObject lowerArm;
@@ -36,12 +34,15 @@ public class DAOMArm : MonoBehaviour
     Quaternion startRot;
     Quaternion targetRot;
 
+    Vector3 surfaceNormal;
+
     Quaternion lowerArmStartRot;
+    Quaternion daomIKTargetStartRot;
+
     int dumbfix = 0;
 
     IXRSelectInteractable selectedInteractable;
     IXRSelectInteractable hitInteractable;
-
 
     [SerializeField]bool isTraveling = false;
     [SerializeField]bool isAttachedToSurface = false;
@@ -53,14 +54,14 @@ public class DAOMArm : MonoBehaviour
     {
         LaunchArm.SetInteractorHandedness += GetHandedness;
         interactor.selectEntered.AddListener(OnGrab);
-        interactor.selectExited.AddListener(args => selectedInteractable = null);
+        interactor.selectExited.AddListener(OnRelease);
     }
 
     void OnDisable()
     {
         LaunchArm.SetInteractorHandedness -= GetHandedness;
         interactor.selectEntered.RemoveListener(OnGrab);
-        interactor.selectExited.RemoveListener(args => selectedInteractable = null);
+        interactor.selectExited.RemoveListener(OnRelease);
     }
 
     /// <summary>
@@ -73,9 +74,20 @@ public class DAOMArm : MonoBehaviour
         this.interactor.activateInput = interactor.activateInput;
     }
 
+    /// <summary>
+    /// Handles the grab event by updating the currently selected interactable object.
+    /// </summary>
     void OnGrab(SelectEnterEventArgs args)
     {
         selectedInteractable = args.interactableObject;
+    }
+
+    /// <summary>
+    /// Handles the release event for the interactable object.
+    /// </summary>
+    void OnRelease(SelectExitEventArgs args)
+    {
+        selectedInteractable = null;
     }
 
     /// <summary>
@@ -88,8 +100,11 @@ public class DAOMArm : MonoBehaviour
 
         RigAnimator.enabled = false;
         extendedArmPart.SetActive(false);
+        
+        lowerArmStartRot = lowerArm.transform.rotation;
+        daomIKTargetStartRot = daomIKTarget.transform.rotation;
 
-        if(interactor != null && interactable != null)
+        if (interactor != null && interactable != null)
         {
             selectedInteractable = interactable;
             interactor.interactionManager.SelectEnter(interactor, selectedInteractable);
@@ -110,13 +125,22 @@ public class DAOMArm : MonoBehaviour
         if (isTraveling) return;
         if (!isAttachedToSurface) return;
         if (recalling) return;
+        
         recalling = true;
+        
+        dumbfix = 0;
+        
+        RigAnimator.enabled = false;
+
+        daomIKTarget.transform.rotation = daomIKTargetStartRot;
 
         interactor.selectActionTrigger = XRBaseInputInteractor.InputTriggerType.Sticky;
+        
         if(hitInteractable != null)
         {
             selectedInteractable = hitInteractable;
         }
+        
         LaunchArm.OnGrabbedGameObject(selectedInteractable);
         
         StartCoroutine(TravelToGameObject(goPoint, normal));
@@ -136,7 +160,9 @@ public class DAOMArm : MonoBehaviour
         Vector3 startPos = transform.position;
 
         startRot = transform.rotation;
-        targetRot = Quaternion.LookRotation(normal);
+        targetRot = Quaternion.LookRotation(surfaceNormal);
+        surfaceNormal = normal;
+
 
         float totalDistance = Vector3.Distance(startPos, point);
         float traveledDistance = 0f;
@@ -150,7 +176,7 @@ public class DAOMArm : MonoBehaviour
 
             if (d >= rotationStartTime)
             {
-                PrepareSurfaceLanding();
+                PrepareSurfaceLanding(point);
             }
             yield return null;
         }
@@ -170,7 +196,8 @@ public class DAOMArm : MonoBehaviour
         Vector3 startPos = transform.position;
 
         startRot = transform.rotation;
-        targetRot = Quaternion.LookRotation(normal);
+        targetRot = Quaternion.LookRotation(surfaceNormal);
+        surfaceNormal = normal;
 
         float totalDistance = Vector3.Distance(startPos, goPoint.transform.position);
         float traveledDistance = 0f;
@@ -184,21 +211,36 @@ public class DAOMArm : MonoBehaviour
 
             if (d >= rotationStartTime)
             {
-                PrepareSurfaceLanding();
+                PrepareSurfaceLanding(goPoint.transform.position);
             }
             yield return null;
         }
         ArmAttaching();
     }
 
-    void PrepareSurfaceLanding()
+    /// <summary>
+    /// Prepares the lower arm for landing on a surface by initiating its rotation to the appropriate orientation.
+    /// </summary>
+    void PrepareSurfaceLanding(Vector3 point)
     {
         if(dumbfix < 1)
         {
-            lowerArmStartRot = lowerArm.transform.rotation;
-            var targetRotation = Quaternion.Euler(new Vector3(90,0,0)); // The arm model is rotated funky, so this is a hardcoded fix to make it look like the arm is bending at the elbow as it approaches the surface. This is really scuffed and should be replaced with a better solution ¯\_(ツ)_/¯
-            StartCoroutine(RotateToTargetRotation(lowerArm.transform, lowerArmStartRot, targetRotation, rotationDuration));
-            dumbfix++;
+            if (recalling)
+            {
+                //var direction = (point - transform.position).normalized;
+                //var rotation = Quaternion.LookRotation(-point);
+                var rotation = Quaternion.AngleAxis(180, surfaceNormal);
+                StartCoroutine(RotateToTargetRotation(lowerArm.transform, lowerArmStartRot, rotation, rotationDuration));
+                dumbfix++;
+            }
+            else
+            {
+                //var direction = (point - transform.position).normalized;
+                //var rotation = Quaternion.LookRotation(point, transform.position);
+                var rotation = Quaternion.AngleAxis(-90, surfaceNormal);
+                StartCoroutine(RotateToTargetRotation(lowerArm.transform, lowerArmStartRot, rotation, rotationDuration));
+                dumbfix++;
+            }
         }
     }
 
@@ -223,12 +265,12 @@ public class DAOMArm : MonoBehaviour
         RigAnimator.enabled = true;
         extendedArmPart.SetActive(true);
 
-        StartCoroutine(RotateToTargetRotation(gameObject.transform, startRot, targetRot, rotationDuration));
         if (recalling)
         {
             LaunchArm.OnArmRecalled();
             return;
         }
+        StartCoroutine(RotateToTargetRotation(gameObject.transform, startRot, targetRot, rotationDuration));
     }
 
     /// <summary>

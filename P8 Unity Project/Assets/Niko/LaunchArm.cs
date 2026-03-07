@@ -7,6 +7,9 @@ using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 public class LaunchArm : MonoBehaviour
 {
+    [Header("Player Rotation")]
+    [SerializeField] new Camera camera;
+    
     [Header("Raycast")]
     [SerializeField] float rayLength = 100f;
     [SerializeField] LayerMask surfaceLayer;
@@ -20,7 +23,7 @@ public class LaunchArm : MonoBehaviour
     [Header("Launched Arm")]
     [SerializeField] GameObject daomArmPrefab;
     [SerializeField] GameObject launchPoint;
-    [SerializeField] [Tooltip("The rotation of which the DAOM prefab is launched")] Vector3 launchRotation = new Vector3(-180, -90, 0);
+    [SerializeField] [Tooltip("The rotation of which the DAOM prefab is launched")] Vector3 launchRotationOffset = new Vector3(90, 90, 0);
     GameObject daomArm;
 
     [Header("Interactor")]
@@ -34,9 +37,12 @@ public class LaunchArm : MonoBehaviour
     [SerializeField] bool aiming = false;
     [SerializeField] bool canLaunch = true;
 
+    [Header("Line Renderer")]
+    [SerializeField] Material validTarget;
+    [SerializeField] Material invalidTarget;
     LineRenderer lineRenderer;
 
-    IXRSelectInteractable carriedInteractable;
+    IXRSelectInteractable selectedInteractable;
     IXRSelectInteractable daomInteractable;
     IXRSelectInteractable hitInteractable;
 
@@ -55,6 +61,10 @@ public class LaunchArm : MonoBehaviour
     void Awake()
     {
         lineRenderer = GetComponent<LineRenderer>();
+        if(camera == null)
+        {
+            camera = Camera.main;
+        }
     }
 
     void OnEnable()
@@ -63,14 +73,15 @@ public class LaunchArm : MonoBehaviour
         EarlyRecall += canLaunch ? Launch : null;
         GrabbedGameObject += AddGrabbedGameObject;
 
-        // Input
+        // <Input>
         interactor.selectEntered.AddListener(OnGrab);
-        interactor.selectExited.AddListener(args => carriedInteractable = null);
+        interactor.selectExited.AddListener(OnRelease);
         
         launchInput.action.performed += ctx => Launch();
         
         aimInput.action.performed += AimState;
         aimInput.action.canceled += AimState;
+        // </Input>
     }
 
 
@@ -80,19 +91,31 @@ public class LaunchArm : MonoBehaviour
         GrabbedGameObject -= AddGrabbedGameObject;
         EarlyRecall -= canLaunch ? Launch : null;
 
-        // Input
+        // <Input>
         interactor.selectEntered.RemoveListener(OnGrab);
-        interactor.selectExited.RemoveListener(args => carriedInteractable = null);
+        interactor.selectExited.RemoveListener(OnRelease);
 
         launchInput.action.performed -= ctx => Launch();
         
         aimInput.action.performed -= AimState;
         aimInput.action.canceled -= AimState;
+        // </Input>
     }
 
+    /// <summary>
+    /// Handles the grab event by updating the currently selected interactable object.
+    /// </summary>
     void OnGrab(SelectEnterEventArgs args)
     {
-        carriedInteractable = args.interactableObject;
+        selectedInteractable = args.interactableObject;
+    }
+
+    /// <summary>
+    /// Handles the release event for the interactable object.
+    /// </summary>
+    void OnRelease(SelectExitEventArgs args)
+    {
+        selectedInteractable = null;
     }
 
     /// <summary>
@@ -109,6 +132,9 @@ public class LaunchArm : MonoBehaviour
         daomInteractable = gameObject;
     }
 
+    /// <summary>
+    /// Handles the aiming state based on the input action context.
+    /// </summary>
     void AimState(InputAction.CallbackContext ctx)
     {
         if(!canLaunch) return;
@@ -139,26 +165,25 @@ public class LaunchArm : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Forces the interactor to grab the interactable object from the recalled DAOM.
+    /// </summary>
     void ForceGrabInteractable()
     {
         interactor.enabled = true;
         if (daomInteractable != null)
         {
-            carriedInteractable = daomInteractable;
-            interactor.interactionManager.SelectEnter(interactor, daomInteractable);
+            selectedInteractable = daomInteractable;
+            interactor.interactionManager.SelectEnter(interactor, selectedInteractable);
         }
         daomInteractable = null;
         hitInteractable = null;
     }
 
-    void Update()
-    {
-        ValidLayer();
-    }
-
     void LateUpdate()
     {
-        DrawAimLine();
+        DrawLineRenderer();
+        SetLineMaterial(ValidLayer());
     }
 
     /// <summary>
@@ -166,15 +191,20 @@ public class LaunchArm : MonoBehaviour
     /// </summary>
     bool ValidLayer()
     {
-        if (aiming && Physics.Raycast(transform.position, transform.forward, out hit, rayLength, surfaceLayer))
+        if (!aiming) return false;
+
+        RaycastHit[] hits = Physics.RaycastAll(transform.position, transform.forward, rayLength, surfaceLayer);
+
+        foreach (var h in hits)
         {
-            if (hit.collider.gameObject.transform.parent.TryGetComponent(out XRGrabInteractable interactable) && carriedInteractable != null)
-            {
-                Debug.Log($"Cannot launch arm at grabable({interactable}) due to the player holding an interactble already.");
-                return false;
-            }
+            if (selectedInteractable != null &&
+                h.collider.transform.IsChildOf(selectedInteractable.transform))
+                continue;
+
+            hit = h;
             return true;
         }
+
         return false;
     }
 
@@ -202,15 +232,22 @@ public class LaunchArm : MonoBehaviour
             aiming = false;
             interactor.keepSelectedTargetValid = true;
             
-            if (hit.collider.gameObject.transform.parent.TryGetComponent(out XRGrabInteractable hitInteractable) && carriedInteractable == null)
+            if (hit.collider.gameObject.transform.parent.TryGetComponent(out XRGrabInteractable hitInteractable) && selectedInteractable == null)
             {
                 this.hitInteractable = hitInteractable;
             }
 
             armGameObject.transform.localScale = Vector3.zero;
 
-            daomArm = Instantiate(daomArmPrefab, launchPoint.transform.position, Quaternion.Euler(launchRotation));
-            daomArm.GetComponent<DAOMArm>().Initialize(armRoot, armIKTarget, hit.point, hit.normal, this.hitInteractable, carriedInteractable);
+            // Calculate the rotation for the arm to be launched at based on the hit point and the launch point, taking the prefabs orientation into account.
+            var direction = (hit.point - launchPoint.transform.position).normalized;
+            var rotation = Quaternion.LookRotation(direction, hit.point);
+
+            // Make it so arm is controlled relative the camera, so right is always right relative to the players view.
+            var cameraOffset = Quaternion.AngleAxis(0, Vector3.up) * camera.transform.right;
+
+            daomArm = Instantiate(daomArmPrefab, launchPoint.transform.position, rotation);
+            daomArm.GetComponent<DAOMArm>().Initialize(armRoot, armIKTarget, hit.point, cameraOffset, this.hitInteractable, selectedInteractable);
             OnSetInteractorHandedness(interactor);
             interactor.enabled = false;
         }
@@ -232,16 +269,36 @@ public class LaunchArm : MonoBehaviour
         }
     }
 
-    void DrawAimLine()
+    /// <summary>
+    /// Renders a line indicating the aiming direction when the player is aiming.
+    /// </summary>
+    void DrawLineRenderer()
     {
-        if(ValidLayer() && daomArm == null)
+        if(aiming && daomArm == null)
         {
             lineRenderer.enabled = true;
             lineRenderer.SetPosition(0, transform.position);
-            lineRenderer.SetPosition(1, hit.point);
+            if(ValidLayer())
+            {
+                lineRenderer.SetPosition(1, hit.point);
+                return;
+            }
+            lineRenderer.SetPosition(1, transform.forward * rayLength);
             return;
         }
         lineRenderer.enabled = false;
+    }
+
+    bool lasttValid = false;
+    /// <summary>
+    /// Sets the line renderer material based on whether the raycast is hitting a valid surface or not, to give the player feedback on whether they can launch the arm or not. lastValid is used to prevent unnecessary material changes for better performance.
+    /// </summary>
+    /// <param name="valid"></param>
+    void SetLineMaterial(bool valid)
+    {
+        if(valid == lasttValid) return;
+        lasttValid = valid;
+        lineRenderer.material = valid ? validTarget : invalidTarget;
     }
 
     void OnDrawGizmos()

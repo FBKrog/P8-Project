@@ -7496,6 +7496,30 @@ PrefabInstance:
       propertyPath: m_InteractionManager
       value: 
       objectReference: {fileID: 1448108683}
+    - target: {fileID: 421134856891243549, guid: e96aac9f1354d3a418816a46162af66d, type: 3}
+      propertyPath: m_SelectActionTrigger
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 754777551449745670, guid: e96aac9f1354d3a418816a46162af66d, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: bca7deac9b1d403439f556239d508fa4, type: 2}
+    - target: {fileID: 754777551449745670, guid: e96aac9f1354d3a418816a46162af66d, type: 3}
+      propertyPath: m_Parameters.colorGradient.key0.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 754777551449745670, guid: e96aac9f1354d3a418816a46162af66d, type: 3}
+      propertyPath: m_Parameters.colorGradient.key0.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 754777551449745670, guid: e96aac9f1354d3a418816a46162af66d, type: 3}
+      propertyPath: m_Parameters.colorGradient.key1.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 754777551449745670, guid: e96aac9f1354d3a418816a46162af66d, type: 3}
+      propertyPath: m_Parameters.colorGradient.key1.g
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1923867230540222504, guid: e96aac9f1354d3a418816a46162af66d, type: 3}
       propertyPath: m_Name
       value: XR Origin Niko
@@ -7553,12 +7577,32 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8259072569663372555, guid: e96aac9f1354d3a418816a46162af66d, type: 3}
+      propertyPath: camera
+      value: 
+      objectReference: {fileID: 5825157909747121918}
+    - target: {fileID: 8259072569663372555, guid: e96aac9f1354d3a418816a46162af66d, type: 3}
+      propertyPath: validTarget
+      value: 
+      objectReference: {fileID: 2100000, guid: c93c57e1960cc64478a75e6e4b6e6b71, type: 2}
+    - target: {fileID: 8259072569663372555, guid: e96aac9f1354d3a418816a46162af66d, type: 3}
       propertyPath: armGameObject
       value: 
       objectReference: {fileID: 483261547}
     - target: {fileID: 8259072569663372555, guid: e96aac9f1354d3a418816a46162af66d, type: 3}
+      propertyPath: invalidTarget
+      value: 
+      objectReference: {fileID: 2100000, guid: bca7deac9b1d403439f556239d508fa4, type: 2}
+    - target: {fileID: 8259072569663372555, guid: e96aac9f1354d3a418816a46162af66d, type: 3}
       propertyPath: surfaceLayer.m_Bits
       value: 256
+      objectReference: {fileID: 0}
+    - target: {fileID: 8259072569663372555, guid: e96aac9f1354d3a418816a46162af66d, type: 3}
+      propertyPath: launchRotationOffset.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8259072569663372555, guid: e96aac9f1354d3a418816a46162af66d, type: 3}
+      propertyPath: launchRotationOffset.y
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
