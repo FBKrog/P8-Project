@@ -17,13 +17,15 @@ public class DAOMArm : MonoBehaviour
     [SerializeField] GameObject extendedArmPart;
 
     [Header("Travel")]
-    [SerializeField][Tooltip("The time it takes the arm to travel from the body to the surface and vice-versa.")] float travelSpeed = 1f;
+    [SerializeField][Tooltip("The time it takes the arm to travel from the body to the surface and vice-versa.")] float travelSpeed = 10f;
 
     [Header("Rotation")]
+    [SerializeField] GameObject upperArm;
     [SerializeField] GameObject lowerArm;
+    [SerializeField] GameObject tip;
     [SerializeField] [Tooltip("The point in travel time the arm will rotate, normalized from percentage of traveled distance")] float rotationStartTime = 0.8f;
     [SerializeField] [Tooltip("The time it takes the arm to rotate into place relative to the surface's normal.")] float rotationDuration = 0.5f;
-    [SerializeField] Vector3 rotationOffset = new(0, 180,90);
+    [SerializeField] Vector3 handRotationOffset = new(0, 0,90);
 
     [Header("Other")]
     [SerializeField] [Tooltip("Make the arm act as if mirrored.")] bool mirror = true;
@@ -36,8 +38,9 @@ public class DAOMArm : MonoBehaviour
 
     Vector3 surfaceNormal;
 
+    Quaternion upperArmStartRot;
     Quaternion lowerArmStartRot;
-    Quaternion daomIKTargetStartRot;
+    Quaternion tipStartRot;
 
     int dumbfix = 0;
 
@@ -101,8 +104,9 @@ public class DAOMArm : MonoBehaviour
         RigAnimator.enabled = false;
         extendedArmPart.SetActive(false);
         
-        lowerArmStartRot = lowerArm.transform.rotation;
-        daomIKTargetStartRot = daomIKTarget.transform.rotation;
+        upperArmStartRot = upperArm.transform.localRotation;
+        lowerArmStartRot = lowerArm.transform.localRotation;
+        tipStartRot = tip.transform.localRotation;
 
         if (interactor != null && interactable != null)
         {
@@ -132,8 +136,6 @@ public class DAOMArm : MonoBehaviour
         
         RigAnimator.enabled = false;
 
-        daomIKTarget.transform.rotation = daomIKTargetStartRot;
-
         interactor.selectActionTrigger = XRBaseInputInteractor.InputTriggerType.Sticky;
         
         if(hitInteractable != null)
@@ -144,7 +146,20 @@ public class DAOMArm : MonoBehaviour
         LaunchArm.OnGrabbedGameObject(selectedInteractable);
         
         StartCoroutine(TravelToGameObject(goPoint, normal));
+
+        surfaceNormal = normal;
+
+        startRot = transform.rotation;
+        var direction = (goPoint.transform.position - transform.position).normalized;
+        var rotation = Quaternion.LookRotation(direction, goPoint.transform.position);
+        targetRot = rotation;
         StartCoroutine(RotateToTargetRotation(transform, startRot, targetRot, rotationDuration));
+
+        StartCoroutine(RotateToTargetRotation(upperArm.transform, upperArm.transform.localRotation, upperArmStartRot, rotationDuration, true));
+
+        StartCoroutine(RotateToTargetRotation(lowerArm.transform, lowerArm.transform.localRotation, lowerArmStartRot, rotationDuration, true));
+
+        StartCoroutine(RotateToTargetRotation(tip.transform, tip.transform.localRotation, tipStartRot, rotationDuration, true));
     }
 
     /// <summary>
@@ -160,8 +175,8 @@ public class DAOMArm : MonoBehaviour
         Vector3 startPos = transform.position;
 
         startRot = transform.rotation;
-        targetRot = Quaternion.LookRotation(surfaceNormal);
         surfaceNormal = normal;
+        targetRot = Quaternion.LookRotation(surfaceNormal);
 
 
         float totalDistance = Vector3.Distance(startPos, point);
@@ -174,7 +189,7 @@ public class DAOMArm : MonoBehaviour
             traveledDistance += distanceDelta;
             float d = traveledDistance / totalDistance;
 
-            if (d >= rotationStartTime)
+            if (d >= rotationStartTime && hitInteractable == null)
             {
                 PrepareSurfaceLanding(point);
             }
@@ -196,8 +211,8 @@ public class DAOMArm : MonoBehaviour
         Vector3 startPos = transform.position;
 
         startRot = transform.rotation;
-        targetRot = Quaternion.LookRotation(surfaceNormal);
         surfaceNormal = normal;
+        targetRot = Quaternion.LookRotation(surfaceNormal);
 
         float totalDistance = Vector3.Distance(startPos, goPoint.transform.position);
         float traveledDistance = 0f;
@@ -225,20 +240,17 @@ public class DAOMArm : MonoBehaviour
     {
         if(dumbfix < 1)
         {
+            startRot = transform.rotation;
             if (recalling)
             {
-                //var direction = (point - transform.position).normalized;
-                //var rotation = Quaternion.LookRotation(-point);
-                var rotation = Quaternion.AngleAxis(180, surfaceNormal);
-                StartCoroutine(RotateToTargetRotation(lowerArm.transform, lowerArmStartRot, rotation, rotationDuration));
+                var rotation = Quaternion.LookRotation(-transform.right, surfaceNormal);
+                StartCoroutine(RotateToTargetRotation(transform, startRot, rotation, rotationDuration));
                 dumbfix++;
             }
             else
             {
-                //var direction = (point - transform.position).normalized;
-                //var rotation = Quaternion.LookRotation(point, transform.position);
-                var rotation = Quaternion.AngleAxis(-90, surfaceNormal);
-                StartCoroutine(RotateToTargetRotation(lowerArm.transform, lowerArmStartRot, rotation, rotationDuration));
+                var rotation = Quaternion.LookRotation(-transform.forward, surfaceNormal);
+                StartCoroutine(RotateToTargetRotation(transform, startRot, rotation, rotationDuration));
                 dumbfix++;
             }
         }
@@ -251,6 +263,7 @@ public class DAOMArm : MonoBehaviour
     {
         isTraveling = false;
         isAttachedToSurface = true;
+        startRot = transform.rotation;
 
         // If the arm hit an interactable, recall the arm WITH the interactable so the player holds it after recall.
         if (hitInteractable != null && !recalling)
@@ -270,20 +283,27 @@ public class DAOMArm : MonoBehaviour
             LaunchArm.OnArmRecalled();
             return;
         }
-        StartCoroutine(RotateToTargetRotation(gameObject.transform, startRot, targetRot, rotationDuration));
+        StartCoroutine(RotateToTargetRotation(transform, startRot, targetRot, rotationDuration));
     }
 
     /// <summary>
     /// Rotates the object from its current orientation to the target rotation over a specified duration.
     /// </summary>
-    IEnumerator RotateToTargetRotation(Transform transform, Quaternion startRot, Quaternion targetRot, float duration)
+    IEnumerator RotateToTargetRotation(Transform transform, Quaternion startRot, Quaternion targetRot, float duration, bool local = false)
     {
         float elapsedTime = 0f;
         while (true)
         {
             elapsedTime += Time.deltaTime;
             float t = Mathf.Clamp01(elapsedTime / duration);
-            transform.rotation = Quaternion.Slerp(startRot, targetRot, t);
+            if (local)
+            {
+                transform.localRotation = Quaternion.Slerp(startRot, targetRot, t);
+            }
+            else
+            {
+                transform.rotation = Quaternion.Slerp(startRot, targetRot, t);
+            }
             if (elapsedTime >= duration)
             {
                 break;
@@ -312,8 +332,8 @@ public class DAOMArm : MonoBehaviour
         if(mirror)
         {
             playerHandOffset.x *= -1;
-            //playerHandOffset.y *= -1;
-            //playerHandOffset.z *= -1;
+            playerHandOffset.y *= -1;
+            playerHandOffset.z *= -1;
         }
 
         // Original solution that doesn't compensate for scaled daom parent :( 
@@ -340,13 +360,14 @@ public class DAOMArm : MonoBehaviour
     void RotateToPlayerHand()
     {
         // Get the rotation of the player hand relative to the player root, and apply that same relative rotation to the daom root to find the rotation for the daom hand.
-        Quaternion relativeRot = Quaternion.Inverse(playerRoot.transform.rotation) * playerIKTarget.transform.rotation * Quaternion.Euler(rotationOffset);
+        Quaternion relativeRot = Quaternion.Inverse(playerRoot.transform.rotation) * playerIKTarget.transform.rotation * Quaternion.Euler(handRotationOffset);
 
         if(mirror)
         {   
             Vector3 euler = relativeRot.eulerAngles;
-            euler.y *= -1;
-            euler.z *= -1;
+            //euler.x *= -1;
+            //euler.y *= -1;
+            //euler.z *= -1;
             relativeRot = Quaternion.Euler(euler);
         }
 

@@ -252,11 +252,13 @@ MonoBehaviour:
   daomIKTarget: {fileID: 4056231379922148810}
   RigAnimator: {fileID: 6896211590706816729}
   extendedArmPart: {fileID: 3648959258249411169}
-  travelSpeed: 2
+  travelSpeed: 9
+  upperArm: {fileID: 833970075655431435}
   lowerArm: {fileID: 3039316450757920571}
+  tip: {fileID: 4192487097419824562}
   rotationStartTime: 0.7
-  rotationDuration: 0.3
-  rotationOffset: {x: 0, y: 180, z: 90}
+  rotationDuration: 0.2
+  handRotationOffset: {x: 0, y: 0, z: 90}
   mirror: 1
   interactor: {fileID: 3938603872344463756}
   isTraveling: 0
@@ -320,7 +322,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1549538779265405393}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.7071068, y: 0, z: -0.7071068, w: 0}
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
@@ -328,7 +330,7 @@ Transform:
   - {fileID: 4623995860383507347}
   - {fileID: 5501879839462186115}
   m_Father: {fileID: 4476448574186069263}
-  m_LocalEulerAnglesHint: {x: 180, y: 90, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!95 &6896211590706816729
 Animator:
   serializedVersion: 7

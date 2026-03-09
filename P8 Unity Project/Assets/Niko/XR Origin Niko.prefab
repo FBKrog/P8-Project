@@ -1338,7 +1338,6 @@ GameObject:
   - component: {fileID: 5529359003400428784}
   - component: {fileID: 8999201156747018159}
   - component: {fileID: 2266510025340624926}
-  - component: {fileID: 7847471703819929115}
   m_Layer: 2
   m_Name: XR Origin Niko
   m_TagString: Untagged
@@ -1447,34 +1446,6 @@ MonoBehaviour:
   m_MotionControllerModeEnded:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &7847471703819929115
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1923867230540222504}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c9b3d17eeb2e6bc47ada81d8f7f638d8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_GazeInteractor: {fileID: 7387378497312312414}
-  m_FallbackDivergence: 60
-  m_HideCursorWithNoActiveRays: 1
-  m_RayInteractors:
-  - m_Interactor: {fileID: 0}
-    m_TeleportRay: 0
-  - m_Interactor: {fileID: 0}
-    m_TeleportRay: 1
-  - m_Interactor: {fileID: 0}
-    m_TeleportRay: 0
-  - m_Interactor: {fileID: 0}
-    m_TeleportRay: 1
-  m_AimAssistRequiredAngle: 30
-  m_AimAssistRequiredSpeed: 0.25
-  m_AimAssistPercent: 0.8
-  m_AimAssistMaxSpeedPercent: 10
 --- !u!1 &2057112323673377795
 GameObject:
   m_ObjectHideFlags: 0
@@ -4031,20 +4002,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eeac6a807ef467e4eba58a53e268ad24, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LaunchArm
+  camera: {fileID: 4363778756145250514}
   rayLength: 100
   surfaceLayer:
     serializedVersion: 2
-    m_Bits: 16
+    m_Bits: 256
   armRoot: {fileID: 5266227723418707562}
   armIKTarget: {fileID: 1736208861656877973}
+  armGameObject: {fileID: 7711461588113745361}
   daomArmPrefab: {fileID: 1114692282621708169, guid: 5036f59f19ad537498e9905b9b05e033, type: 3}
-  launchPoint: {fileID: 6767721083324007362}
-  launchRotation: {x: -180, y: -90, z: 0}
+  launchPoint: {fileID: 7711461588113745361}
   interactor: {fileID: 421134856891243549}
   launchInput: {fileID: 83097790271614945, guid: c348712bda248c246b8c49b3db54643f, type: 3}
   aimInput: {fileID: 7904272356298805229, guid: c348712bda248c246b8c49b3db54643f, type: 3}
   aiming: 0
   canLaunch: 1
+  validTarget: {fileID: 2100000, guid: c93c57e1960cc64478a75e6e4b6e6b71, type: 2}
+  invalidTarget: {fileID: 2100000, guid: bca7deac9b1d403439f556239d508fa4, type: 2}
 --- !u!120 &754777551449745670
 LineRenderer:
   serializedVersion: 3
@@ -4071,7 +4045,7 @@ LineRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 91ff3830fc4055a4fb0d0d2be32101a7, type: 2}
+  - {fileID: 2100000, guid: bca7deac9b1d403439f556239d508fa4, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4925,14 +4899,3 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7378618157167557198, guid: b84cd05e1160fe34cab2585022c8cd99, type: 3}
   m_PrefabInstance: {fileID: 4282316958133753881}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &7387378497312312414 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6766910295942714439, guid: b84cd05e1160fe34cab2585022c8cd99, type: 3}
-  m_PrefabInstance: {fileID: 4282316958133753881}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c416f1a5c494e224fb5564fd1362b50d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 

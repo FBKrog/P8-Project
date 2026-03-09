@@ -23,7 +23,6 @@ public class LaunchArm : MonoBehaviour
     [Header("Launched Arm")]
     [SerializeField] GameObject daomArmPrefab;
     [SerializeField] GameObject launchPoint;
-    [SerializeField] [Tooltip("The rotation of which the DAOM prefab is launched")] Vector3 launchRotationOffset = new Vector3(90, 90, 0);
     GameObject daomArm;
 
     [Header("Interactor")]
@@ -239,14 +238,14 @@ public class LaunchArm : MonoBehaviour
 
             armGameObject.transform.localScale = Vector3.zero;
 
-            // Calculate the rotation for the arm to be launched at based on the hit point and the launch point, taking the prefabs orientation into account.
+            // Calculate the rotation for the arm to be launched at based on the hit point and the launch point and multiplying with an offset.
             var direction = (hit.point - launchPoint.transform.position).normalized;
             var rotation = Quaternion.LookRotation(direction, hit.point);
 
             // Make it so arm is controlled relative the camera, so right is always right relative to the players view.
             var cameraOffset = Quaternion.AngleAxis(0, Vector3.up) * camera.transform.right;
 
-            daomArm = Instantiate(daomArmPrefab, launchPoint.transform.position, rotation);
+            daomArm = Instantiate(daomArmPrefab, launchPoint.transform.position, rotation );
             daomArm.GetComponent<DAOMArm>().Initialize(armRoot, armIKTarget, hit.point, cameraOffset, this.hitInteractable, selectedInteractable);
             OnSetInteractorHandedness(interactor);
             interactor.enabled = false;
