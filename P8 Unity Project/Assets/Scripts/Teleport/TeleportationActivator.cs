@@ -15,6 +15,8 @@ public class TeleportationActivator : MonoBehaviour
     /// </summary>
     public System.Action<System.Action> onBeforeTeleport;
 
+    [HideInInspector] public bool orbConnected = false;
+
     void Start()
     {
         teleportInteractor.gameObject.SetActive(false);
@@ -23,6 +25,7 @@ public class TeleportationActivator : MonoBehaviour
 
     private void Action_performed(InputAction.CallbackContext obj)
     {
+        if (!orbConnected) return;
         teleportInteractor.gameObject.SetActive(true);
     }
 
@@ -30,6 +33,8 @@ public class TeleportationActivator : MonoBehaviour
     {
         if (!teleportActivatorAction.action.WasReleasedThisFrame())
             return;
+
+        if (!orbConnected) return;
 
         if (onBeforeTeleport != null)
             onBeforeTeleport(ExecuteTeleport);
