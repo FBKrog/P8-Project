@@ -44,6 +44,7 @@ public class HOMERRaycast : MonoBehaviour
     public event System.Action             ExtendStarted;
     public event System.Action<GameObject> GrabStarted;
     public event System.Action             GrabEnded;
+    public event System.Action             RetractStarted;
 
     // ── Internals ─────────────────────────────────────────────────────────
     private enum State { Idle, Aiming, Extending, Extended, Grabbed, Retracting }
@@ -242,6 +243,7 @@ public class HOMERRaycast : MonoBehaviour
 
     private void BeginRetract()
     {
+        RetractStarted?.Invoke();
         state = State.Retracting;
     }
 

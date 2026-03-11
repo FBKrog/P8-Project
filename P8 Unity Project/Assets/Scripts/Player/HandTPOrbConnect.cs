@@ -16,6 +16,11 @@ public class HandTPOrbConnect : MonoBehaviour
     [SerializeField] private float snapRadius = 0.12f;
     [SerializeField] private string orbTag = "TPOrb";
 
+    public event System.Action OrbSnapped;
+
+    // Read by OrbPedestal to check whether this hand controls a given orb
+    public XRGrabInteractable SnappedOrb => _snappedOrb;
+
     private XRGrabInteractable _snappedOrb;
     private bool _isSnapping;
     private float _snapCooldown;
@@ -79,8 +84,23 @@ public class HandTPOrbConnect : MonoBehaviour
         if (teleportationActivator != null)
             teleportationActivator.orbConnected = true;
 
+        OrbSnapped?.Invoke();
+
         // Listen for re-grab so we can detach
         orb.selectEntered.AddListener(OnOrbRegrabbed);
+    }
+
+    /// <summary>
+    /// Called by OrbPedestal when the orb is claimed by the pedestal.
+    /// Clears the snap without re-enabling physics (pedestal keeps the orb kinematic).
+    /// </summary>
+    public void DisconnectOrb()
+    {
+        if (_snappedOrb == null) return;
+        _snappedOrb.selectEntered.RemoveListener(OnOrbRegrabbed);
+        _snappedOrb = null;
+        if (teleportationActivator != null)
+            teleportationActivator.orbConnected = false;
     }
 
     private void OnOrbRegrabbed(SelectEnterEventArgs args)

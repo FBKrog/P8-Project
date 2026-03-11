@@ -78,6 +78,9 @@ public class TutorialManager : MonoBehaviour
 
         if (vrCamera == null)
             Debug.LogWarning("[TutorialManager] No camera found. Assign vrCamera or tag a camera MainCamera.");
+
+        BuildSubtitlePanel();
+        HideSubtitle();
     }
 
     private void Start()
@@ -85,11 +88,8 @@ public class TutorialManager : MonoBehaviour
         if (objectivesManager == null)
             objectivesManager = FindFirstObjectByType<ObjectivesManager>();
 
-        BuildSubtitlePanel();
         if (autoShowOnPlay)
             ShowSubtitle(previewText);
-        else
-            HideSubtitle();
     }
 
     private void LateUpdate()
@@ -148,7 +148,7 @@ public class TutorialManager : MonoBehaviour
         _subtitleText.color              = textColor;
         _subtitleText.fontSize           = fontSize;
         _subtitleText.alignment          = TextAlignmentOptions.Center;
-        _subtitleText.enableWordWrapping = true;
+        _subtitleText.textWrappingMode   = TextWrappingModes.Normal;
 
         if (subtitleFont != null)
             _subtitleText.font = subtitleFont;
