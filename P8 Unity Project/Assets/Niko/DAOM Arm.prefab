@@ -252,7 +252,7 @@ MonoBehaviour:
   daomIKTarget: {fileID: 4056231379922148810}
   RigAnimator: {fileID: 6896211590706816729}
   extendedArmPart: {fileID: 3648959258249411169}
-  travelSpeed: 9
+  travelSpeed: 7
   upperArm: {fileID: 833970075655431435}
   lowerArm: {fileID: 3039316450757920571}
   tip: {fileID: 4192487097419824562}

@@ -196,14 +196,16 @@ public class LaunchArm : MonoBehaviour
 
         foreach (var h in hits)
         {
-            if (selectedInteractable != null &&
-                h.collider.transform.IsChildOf(selectedInteractable.transform))
+            if (selectedInteractable != null && !h.collider.transform.IsChildOf(selectedInteractable.transform) && 
+                h.collider.transform.parent.TryGetComponent(out XRGrabInteractable hitInteractable))
+                return false;
+
+            if (selectedInteractable != null && h.collider.transform.IsChildOf(selectedInteractable.transform))
                 continue;
 
             hit = h;
             return true;
         }
-
         return false;
     }
 
