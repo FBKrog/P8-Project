@@ -19,7 +19,11 @@ public class TutorialManager : MonoBehaviour
     // -------------------------------------------------------------------------
     // Inspector fields
     // -------------------------------------------------------------------------
+    [Header("Tutorial Active")]
+    [Tooltip("If true, the tutorial plays automatically on Start. If false, it is skipped entirely.")]
+    [SerializeField] private bool playTutorialOnStart = true;
 
+    [Header("VR Player Camera")]
     [Tooltip("Leave empty to use Camera.main.")]
     [SerializeField] private Camera vrCamera;
 
@@ -48,12 +52,6 @@ public class TutorialManager : MonoBehaviour
     [Header("Dependencies")]
     [Tooltip("Auto-found if null.")]
     [SerializeField] private ObjectivesManager objectivesManager;
-
-    [Header("Debug / Preview")]
-    [Tooltip("Show the subtitle panel immediately on Play — useful for positioning/visual tweaks.")]
-    [SerializeField] private bool autoShowOnPlay = false;
-    [Tooltip("Text shown by 'Show Subtitle (Debug)' and when autoShowOnPlay is enabled.")]
-    [SerializeField] private string previewText = "This is a preview subtitle.";
 
     // -------------------------------------------------------------------------
     // Private state
@@ -88,8 +86,8 @@ public class TutorialManager : MonoBehaviour
         if (objectivesManager == null)
             objectivesManager = FindFirstObjectByType<ObjectivesManager>();
 
-        if (autoShowOnPlay)
-            ShowSubtitle(previewText);
+        if (playTutorialOnStart)
+            StartTutorial();
     }
 
     private void LateUpdate()
@@ -205,7 +203,7 @@ public class TutorialManager : MonoBehaviour
         _subtitleText.rectTransform.offsetMax = new Vector2(-hPad, -vPad);
 
         // Phase 1: unconstrained width
-        _subtitleText.enableWordWrapping = false;
+        _subtitleText.textWrappingMode = TextWrappingModes.Normal;
         _subtitleText.ForceMeshUpdate();
         float unconstrainedW = _subtitleText.preferredWidth;
 
@@ -218,7 +216,7 @@ public class TutorialManager : MonoBehaviour
         else
         {
             // Phase 2: wrap at max width
-            _subtitleText.enableWordWrapping = true;
+            _subtitleText.textWrappingMode = TextWrappingModes.Normal;
             _subtitleText.ForceMeshUpdate();
             canvasW = maxCanvasW;
             canvasH = _subtitleText.preferredHeight + vPad * 2f;
@@ -233,13 +231,11 @@ public class TutorialManager : MonoBehaviour
     // Public API
     // -------------------------------------------------------------------------
 
-    [ContextMenu("Show Subtitle (Debug)")]
-    private void DebugShowSubtitle() => ShowSubtitle(previewText);
+    /// <summary>
+    /// Whether the tutorial is currently active.
+    /// </summary>
+    public bool IsTutorialActive => _tutorialActive;
 
-    [ContextMenu("Hide Subtitle (Debug)")]
-    private void DebugHideSubtitle() => HideSubtitle();
-
-    [ContextMenu("Start Tutorial (Debug)")]
     public void StartTutorial()
     {
         _tutorialActive   = true;
