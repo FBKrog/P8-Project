@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Rendering;
 
 /// <summary>
@@ -34,6 +35,12 @@ public class TeleportBlink : MonoBehaviour
 
     [Tooltip("How fast the screen opens (fades back in).")]
     [SerializeField, Range(0.05f, 0.6f)] private float fadeInDuration = 0.18f;
+
+    /// <summary>
+    /// Fired immediately after the teleport position change executes (screen is black).
+    /// </summary>
+    public System.Action onTeleported;       // kept for code subscribers
+    public UnityEvent    onTeleportedEvent;  // Inspector-wirable
 
     private TeleportationActivator _activator;
     private Material _fadeMaterial;
@@ -108,6 +115,8 @@ public class TeleportBlink : MonoBehaviour
         //    SetActive(false) on the interactor triggers the hover-exit on the
         //    TeleportationArea, which queues the position change with TeleportationProvider.
         executeTeleport();
+        onTeleported?.Invoke();
+        onTeleportedEvent?.Invoke();
 
         // 4. Wait N frames for TeleportationProvider.Update() to apply the
         //    position change before we start fading back in.

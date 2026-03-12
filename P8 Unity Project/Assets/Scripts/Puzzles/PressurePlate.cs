@@ -8,6 +8,10 @@ using UnityEngine.Events;
 /// </summary>
 public class PressurePlate : MonoBehaviour
 {
+    [Header("Player Detection")]
+    [Tooltip("Tag on the VR Player that activates the plate when stepping on it. Set to empty string to disable.")]
+    [SerializeField] private string playerTag = "Player";
+
     [Header("Events")]
     public UnityEvent OnPlateActivated;
     public UnityEvent OnPlateDeactivated;
@@ -20,7 +24,13 @@ public class PressurePlate : MonoBehaviour
         if (_isActivated) return;
 
         PressurePlateTrigger linker = other.GetComponentInParent<PressurePlateTrigger>();
-        if (linker == null || linker.TargetPlate != this) return;
+        bool isLinkedBlock = linker != null && linker.TargetPlate == this;
+
+        bool isPlayer = !string.IsNullOrEmpty(playerTag)
+                     && (other.CompareTag(playerTag)
+                      || (other.attachedRigidbody != null && other.attachedRigidbody.CompareTag(playerTag)));
+
+        if (!isLinkedBlock && !isPlayer) return;
 
         _isActivated  = true;
         _currentBlock = other.attachedRigidbody != null
@@ -38,7 +48,12 @@ public class PressurePlate : MonoBehaviour
                              ? other.attachedRigidbody.gameObject
                              : other.gameObject;
 
-        if (exiting != _currentBlock) return;
+        bool isTracked = exiting == _currentBlock;
+        bool isPlayer  = !string.IsNullOrEmpty(playerTag)
+                      && (other.CompareTag(playerTag)
+                       || (other.attachedRigidbody != null && other.attachedRigidbody.CompareTag(playerTag)));
+
+        if (!isTracked && !isPlayer) return;
 
         _isActivated  = false;
         _currentBlock = null;

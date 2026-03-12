@@ -10,6 +10,8 @@ public class TutorialManager : MonoBehaviour
     public class TutorialStep
     {
         public string subtitleText;
+        [Tooltip("Optional short ID for use with TutorialObjective.AdvanceIfStepId().")]
+        public string stepId;
         [Tooltip("Seconds to display before auto-advancing. 0 = manual advance only.")]
         public float displayDuration = 3f;
         [Tooltip("Optional: name of an objective to complete when this step is shown.")]
@@ -235,6 +237,14 @@ public class TutorialManager : MonoBehaviour
     /// Whether the tutorial is currently active.
     /// </summary>
     public bool IsTutorialActive => _tutorialActive;
+
+    /// <summary>
+    /// The stepId of the currently displayed step, or null if no step is active.
+    /// </summary>
+    public string CurrentStepId =>
+        _currentStepIndex >= 0 && _currentStepIndex < steps.Count
+            ? steps[_currentStepIndex].stepId
+            : null;
 
     public void StartTutorial()
     {

@@ -61,26 +61,24 @@ MonoBehaviour:
   - subtitleText: Place the orb in the empty slot on your left hand.
     displayDuration: 0
     completesObjective: 
-  - subtitleText: You can now teleport by tilting the left hand joystick forward.
-    displayDuration: 0
+  - subtitleText: You can now teleport by tilting the left thumbstick forward.
+    displayDuration: 4
     completesObjective: OrbObjective
-  - subtitleText: ' Teleport to the next area through the door and further on top
-      of the plate.'
+  - subtitleText: Teleport through the door to the pressure plate ahead.
+    stepId: TeleportStep
     displayDuration: 0
-    completesObjective: 
-  - subtitleText: To start an objective you need to detach the Orb of teleportation
-      and place it on the pedestal.
+    completesObjective:
+  - subtitleText: Step on the pressure plate to start the puzzle.
+    stepId: PlateStep
+    displayDuration: 0
+    completesObjective:
+  - subtitleText: Remove the Orb from your hand and place it on the pedestal.
+    stepId: OrbPedestalStep
     displayDuration: 0
     completesObjective: PuzzleIntroObjective
-  - subtitleText: Do The objective
+  - subtitleText: Objective complete! Continue through the level.
     displayDuration: 0
-    completesObjective: 
-  - subtitleText: Continue
-    displayDuration: 0
-    completesObjective: 
-  - subtitleText: Tutorial Complete
-    displayDuration: 0
-    completesObjective: 
+    completesObjective:
   maxPanelWidth: 1.2
   panelPadding: 5
   followDistance: 1.5
@@ -104,7 +102,6 @@ GameObject:
   - component: {fileID: 5477172130026036050}
   - component: {fileID: 4389983794361988867}
   - component: {fileID: 2516088930629610249}
-  - component: {fileID: 7715232398433055347}
   m_Layer: 0
   m_Name: ObjectivesManager
   m_TagString: Untagged
@@ -182,19 +179,4 @@ MonoBehaviour:
   orbConnect: {fileID: 0}
   orbGrabInteractable: {fileID: 0}
   autoStart: 1
---- !u!114 &7715232398433055347
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3678329856720572727}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c019d7bc59b75404b9712d3db1c923d9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TeleportPuzzleObjective
-  tutorialManager: {fileID: 6255957948215574358}
-  teleportProvider: {fileID: 0}
-  pressurePlate: {fileID: 0}
-  orbPedestal: {fileID: 0}
+

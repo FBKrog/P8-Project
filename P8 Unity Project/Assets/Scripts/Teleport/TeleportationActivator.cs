@@ -42,8 +42,14 @@ public class TeleportationActivator : MonoBehaviour
             ExecuteTeleport();
     }
 
+    /// <summary>
+    /// Fired after the teleport interactor is deactivated (position change queued).
+    /// </summary>
+    public System.Action onAfterTeleport;
+
     private void ExecuteTeleport()
     {
         teleportInteractor.gameObject.SetActive(false);
+        onAfterTeleport?.Invoke();
     }
 }
