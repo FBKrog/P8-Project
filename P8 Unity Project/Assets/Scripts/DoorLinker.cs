@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 /// <summary>
 /// Slides a door open when every DoorTrigger in the Triggers list has been
@@ -30,6 +31,9 @@ public class DoorLinker : MonoBehaviour
     [Tooltip("Local-space axis along which the panels slide. Right panel moves positive, left panel moves negative.")]
     [SerializeField] private Vector3 slideAxis = Vector3.right;
 
+    [Header("Events")]
+    public UnityEvent OnDoorOpened;
+    
     private bool _isOpen = false;
 
     // -------------------------------------------------------------------------
@@ -87,6 +91,7 @@ public class DoorLinker : MonoBehaviour
         }
 
         StartCoroutine(SlideDoor());
+        OnDoorOpened.Invoke();
     }
 
     private IEnumerator SlideDoor()

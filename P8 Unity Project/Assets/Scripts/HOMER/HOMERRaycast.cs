@@ -261,7 +261,8 @@ public class HOMERRaycast : MonoBehaviour
         {
             hitPoint = hit.point;
             // Walk up the hierarchy in case the collider is on a child of the interactable.
-            grabbable = hit.collider.GetComponentInParent<XRGrabInteractable>();
+            var found = hit.collider.GetComponentInParent<XRGrabInteractable>();
+            grabbable = (found != null && found.enabled) ? found : null;
             return true;
         }
         hitPoint  = Vector3.zero;
