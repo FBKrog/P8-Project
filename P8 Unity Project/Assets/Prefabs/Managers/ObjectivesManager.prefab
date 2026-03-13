@@ -1,0 +1,182 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3583745872898953471
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4365385541941933710}
+  - component: {fileID: 6255957948215574358}
+  m_Layer: 0
+  m_Name: TutorialManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4365385541941933710
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3583745872898953471}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5477172130026036050}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6255957948215574358
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3583745872898953471}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 05fbdcbb681bdeb4fb26b3678d019e2d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TutorialManager
+  playTutorialOnStart: 1
+  vrCamera: {fileID: 0}
+  steps:
+  - subtitleText: Aim your arm by holding the right hand trigger button. Release
+      the trigger to extend arm.
+    displayDuration: 0
+    completesObjective: 
+  - subtitleText: Grab the Orb of Teleportation by holding the right hand select
+      button.
+    displayDuration: 0
+    completesObjective: 
+  - subtitleText: Retract your arm with the orb in hand by pressing the trigger button.
+    displayDuration: 0
+    completesObjective: 
+  - subtitleText: Place the orb in the empty slot on your left hand.
+    displayDuration: 0
+    completesObjective: 
+  - subtitleText: You can now teleport by tilting the left thumbstick forward.
+    displayDuration: 4
+    completesObjective: OrbObjective
+  - subtitleText: Teleport through the door to the pressure plate ahead.
+    stepId: TeleportStep
+    displayDuration: 0
+    completesObjective:
+  - subtitleText: Step on the pressure plate to start the puzzle.
+    stepId: PlateStep
+    displayDuration: 0
+    completesObjective:
+  - subtitleText: Remove the Orb from your hand and place it on the pedestal.
+    stepId: OrbPedestalStep
+    displayDuration: 0
+    completesObjective: PuzzleIntroObjective
+  - subtitleText: Objective complete! Continue through the level.
+    displayDuration: 0
+    completesObjective:
+  maxPanelWidth: 1.2
+  panelPadding: 5
+  followDistance: 1.5
+  viewOffsetX: 0
+  viewOffsetY: -0.22
+  followSmoothing: 0.3
+  rotationSpeed: 5
+  backgroundColor: {r: 0.2603773, g: 0.24394456, b: 0.22942679, a: 0.4745098}
+  textColor: {r: 1, g: 0.7667351, b: 0.3150943, a: 1}
+  fontSize: 6
+  subtitleFont: {fileID: 0}
+  objectivesManager: {fileID: 4389983794361988867}
+--- !u!1 &3678329856720572727
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5477172130026036050}
+  - component: {fileID: 4389983794361988867}
+  - component: {fileID: 2516088930629610249}
+  m_Layer: 0
+  m_Name: ObjectivesManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5477172130026036050
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3678329856720572727}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 4365385541941933710}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4389983794361988867
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3678329856720572727}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54aaabab8b3ef96458d8ec2789eb4648, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjectivesManager
+  objectives:
+  - objectiveName: OrbObjective
+    description: Pick up and place the TP Orb
+    isCompleted: 0
+  - objectiveName: PuzzleIntroObjective
+    description: Teleport to the next area and place the orb on the pedestal.
+    isCompleted: 0
+  onObjectiveCompleted:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: DoorTrigger, Assembly-CSharp
+        m_MethodName: ActivateIfObjectiveCompleted
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  onAllObjectivesCompleted:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &2516088930629610249
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3678329856720572727}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 341caea7503f4c3459a22f3667226d79, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OrbTutorialObjective
+  tutorialManager: {fileID: 6255957948215574358}
+  homerRaycast: {fileID: 0}
+  orbConnect: {fileID: 0}
+  orbGrabInteractable: {fileID: 0}
+  autoStart: 1
+

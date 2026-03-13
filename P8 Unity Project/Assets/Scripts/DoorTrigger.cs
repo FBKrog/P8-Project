@@ -11,10 +11,21 @@ using UnityEngine;
 /// </summary>
 public class DoorTrigger : MonoBehaviour
 {
+    [SerializeField] private string activateOnObjective;
+
     public bool IsActivated { get; private set; }
 
     // C# event — subscribed to by DoorLinker at runtime
     internal event Action Activated;
+
+    /// <summary>
+    /// Call from ObjectivesManager.onObjectiveCompleted (UnityEvent&lt;string&gt;, Dynamic mode).
+    /// Activates only when objectiveName matches activateOnObjective.
+    /// </summary>
+    public void ActivateIfObjectiveCompleted(string objectiveName)
+    {
+        if (objectiveName == activateOnObjective) Activate();
+    }
 
     /// <summary>
     /// Mark this condition as satisfied. Wire this to a UnityEvent in the Inspector.

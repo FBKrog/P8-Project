@@ -44,6 +44,7 @@ public class HOMERRaycast : MonoBehaviour
     public event System.Action             ExtendStarted;
     public event System.Action<GameObject> GrabStarted;
     public event System.Action             GrabEnded;
+    public event System.Action             RetractStarted;
 
     // ── Internals ─────────────────────────────────────────────────────────
     private enum State { Idle, Aiming, Extending, Extended, Grabbed, Retracting }
@@ -242,6 +243,7 @@ public class HOMERRaycast : MonoBehaviour
 
     private void BeginRetract()
     {
+        RetractStarted?.Invoke();
         state = State.Retracting;
     }
 
@@ -259,7 +261,8 @@ public class HOMERRaycast : MonoBehaviour
         {
             hitPoint = hit.point;
             // Walk up the hierarchy in case the collider is on a child of the interactable.
-            grabbable = hit.collider.GetComponentInParent<XRGrabInteractable>();
+            var found = hit.collider.GetComponentInParent<XRGrabInteractable>();
+            grabbable = (found != null && found.enabled) ? found : null;
             return true;
         }
         hitPoint  = Vector3.zero;

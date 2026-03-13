@@ -9,7 +9,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4178240356983542873}
-  - component: {fileID: 2609500098915273383}
   m_Layer: 0
   m_Name: Teleport Interaction
   m_TagString: Untagged
@@ -34,21 +33,6 @@ Transform:
   - {fileID: 5106622301167173914}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2609500098915273383
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4451290486412502756}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c4e5f6a7b8c9d0e1f2a3b4c5d6e7f801, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TeleportBlink
-  teleportationProvider: {fileID: 0}
-  fadeOutDuration: 0.2
-  fadeInDuration: 0.18
 --- !u!1001 &5106622301167373402
 PrefabInstance:
   m_ObjectHideFlags: 0

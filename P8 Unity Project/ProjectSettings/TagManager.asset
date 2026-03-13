@@ -9,6 +9,7 @@ TagManager:
   - TeleportPad
   - Door
   - Battery
+  - TPOrb
   layers:
   - Default
   - TransparentFX
