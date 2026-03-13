@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using UnityEngine;
-using UnityEngine.LowLevelPhysics2D;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
@@ -113,7 +112,6 @@ public class DAOMArm : MonoBehaviour
         this.lookReference = lookReference;
 
         RigAnimator.enabled = false;
-        //extendedArmPart.SetActive(false);
         
         upperArmStartRot = upperArm.transform.localRotation;
         lowerArmStartRot = lowerArm.transform.localRotation;
@@ -405,15 +403,15 @@ public class DAOMArm : MonoBehaviour
     void RotateToPlayerHand()
     {
         // Get the rotation of the player hand relative to the player root, and apply that same relative rotation to the daom root to find the rotation for the daom hand.
-        Quaternion relativeRot = Quaternion.Inverse(playerRoot.transform.rotation) * playerIKTarget.transform.rotation; 
+        Quaternion relativeRot = playerIKTarget.transform.rotation * Quaternion.Euler(handRotationOffset); 
 
         if(mirror)
         {
-            relativeRot *= Quaternion.Euler(handRotationOffset);
+            relativeRot *= Quaternion.Inverse(playerRoot.transform.rotation) ;
         }
         else
         {
-            relativeRot *= Quaternion.Euler(handRotationOffset) * Quaternion.Euler(0,180,-180);
+            relativeRot *= playerRoot.transform.rotation * Quaternion.Euler(0,180,-180);
         }
         // Apply the relative rotation to the daom root to find the target rotation for the daom hand.
         daomIKTarget.transform.rotation = daomRoot.transform.rotation * relativeRot;
