@@ -1,36 +1,33 @@
-Shader "Felix/Cel Opaque"
+Shader "Felix/Cel Trans"
 {
     Properties
     { 
-        [Header(Textures)]
         [MainTexture] _BaseMap("Base Map", 2D) = "white" {}
         [MainColor] _BaseColor("Base Color", Color) = (1, 1, 1, 1)
-        
-        // [ToggleOff] _UseBump("Use Normal Map", Float) = 0.0
-        // _BumpScale("Scale", Float) = 1.0
-        // [Normal] _BumpMap("Normal Map", 2D) = "bump" {}
-        
-        [Header(Specular)]
-        [ToggleOff] _UseSpecular("Use Specular", Float) = 1.0
-        _SpecularCutoff("Specular Cutoff", Range(0.001, 1.0)) = 0.5
-        
-        [Header(Emission)]
-        [ToggleOff] _UseEmission("Use Emission", Float) = 0.0
-        [HDR] _EmissionColor("Color", Color) = (0,0,0)
-        _EmissionMap("Emission", 2D) = "white" {}
 
-        [Header(Shadows)]
         _ShadowCutoff("Shadow Cutoff", Range(0.0, 1.0)) = 0.5
         _ShadowBlur("Shadow Edge Blur", Range(0.0, 0.01)) = 0.002
+        
+        _SpecularCutoff("Specular Cutoff", Range(0.001, 1.0)) = 0.5
+        
+        [ToggleOff] _UseSpecular("Use Specular", Float) = 0.0
+        
+        [ToggleUI] _UseEmission("Use Emission", Float) = 0.0
+        [HDR] _EmissionColor("Color", Color) = (0,0,0)
+        _EmissionMap("Emission", 2D) = "white" {}
     }
     
     SubShader
     {
         Tags 
         { 
-            "RenderType" = "Opaque"
+            "Queue"="Transparent"
+            "RenderType" = "Transparent"
             "RenderPipeline" = "UniversalPipeline"
         }
+
+        // For transparency blending
+        Blend SrcAlpha OneMinusSrcAlpha
         
         // Cull Off // Turns off backculling
         // ZWrite On // Allows writing to the Z-buffer
@@ -59,7 +56,7 @@ Shader "Felix/Cel Opaque"
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
             #pragma multi_compile_fragment _ _SHADOWS_SOFT _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
             
-            // Makes floats into toggles
+            // Makes floats into toggles for conditional compilation
             #pragma shader_feature_local_fragment _USESPECULAR_OFF
             #pragma shader_feature_local_fragment _USEEMISSION_OFF
 
@@ -84,9 +81,6 @@ Shader "Felix/Cel Opaque"
             {
                 float4 positionOS   : POSITION;
                 float3 normalOS     : NORMAL;
-// #ifndef _USEBUMP_OFF
-//                 float4 tangentOS    : TANGENT;
-// #endif
                 float2 uv           : TEXCOORD0;
                 // Lightmap declarations from https://github.com/Unity-Technologies/Graphics/blob/b81f05bd21ab1bf7a240dd30fb4ecee4cff2d4e5/Packages/com.unity.render-pipelines.universal/Shaders/SimpleLitGBufferPass.hlsl#L113-L127
                 float2 staticLightmapUV   : TEXCOORD1;
@@ -97,12 +91,8 @@ Shader "Felix/Cel Opaque"
             {
                 float4 positionCS  : SV_POSITION;
                 float3 positionWS  : TEXCOORD1;
-                half3 normalWS    : TEXCOORD2;
-// #ifndef _USEBUMP_OFF
-//                 half3 tangentWS    : TEXCOORD3;
-//                 half3 bitangentWS  : TEXCOORD4;
-// #endif
-                float2 uv          : TEXCOORD0;
+                float3 normalWS    : TEXCOORD2;
+                float2 uv           : TEXCOORD0;
                 
                 // Lightmaps and probeOcllusion from https://github.com/Unity-Technologies/Graphics/blob/b81f05bd21ab1bf7a240dd30fb4ecee4cff2d4e5/Packages/com.unity.render-pipelines.universal/Shaders/SimpleLitGBufferPass.hlsl#L113-L127
                 DECLARE_LIGHTMAP_OR_SH(staticLightmapUV, vertexSH, 7);
@@ -124,29 +114,15 @@ Shader "Felix/Cel Opaque"
 
             TEXTURE2D(_BaseMap);
             SAMPLER(sampler_BaseMap);
-// #ifndef _USEBUMP_OFF
-//             TEXTURE2D(_BumpMap);
-//             SAMPLER(sampler_BumpMap);
-// #endif
-                 
-#ifndef _USEEMISSION_OFF
-            TEXTURE2D(_EmissionMap);
-            SAMPLER(sampler_EmissionMap);
-#endif
 
             CBUFFER_START(UnityPerMaterial)
                 half4 _BaseColor;
                 float4 _BaseMap_ST;
-// #ifndef _USEBUMP_OFF
-//                 float4 _BumpMap_ST;
-// #endif
-#ifndef _USEEMISSION_OFF
-                float4 _EmissionMap_ST;
-#endif
                 float _ShadowCutoff;
                 float _ShadowBlur;
                 float _SpecularCutoff;
                 half4 _EmissionColor;
+                half4 _EmissionMap;
             CBUFFER_END
             
             Varyings vert(Attributes IN)
@@ -155,18 +131,10 @@ Shader "Felix/Cel Opaque"
                 // Get object position in world and object space
                 OUT.positionWS = TransformObjectToWorld(IN.positionOS.xyz);
                 OUT.positionCS = TransformWorldToHClip(OUT.positionWS);
-                // Get object UV map
-                OUT.uv = TRANSFORM_TEX(IN.uv, _BaseMap);
-                
                 // Get object normals
                 OUT.normalWS = TransformObjectToWorldNormal(IN.normalOS);
-// #ifndef _USEBUMP_OFF
-//                 OUT.tangentWS = TransformObjectToWorldDir(IN.tangentOS.xyz);
-//                 // compute bitangent from cross product of normal and tangent
-//                 half tangentSign = IN.tangentOS.w * unity_WorldTransformParams.w;
-//                 half3 wBitangent = cross(OUT.normalWS, OUT.tangentWS) * tangentSign;
-//                 OUT.bitangentWS = wBitangent;
-// #endif
+                // Get object UV map
+                OUT.uv = TRANSFORM_TEX(IN.uv, _BaseMap);
                 
                 return OUT;
             }
@@ -261,22 +229,7 @@ Shader "Felix/Cel Opaque"
                 // The Forward+ light loop (LIGHT_LOOP_BEGIN) requires the InputData struct to be in its scope.
                 InputData inputData = (InputData)0;
                 inputData.positionWS = input.positionWS;
-                
-                half3 worldNormal;
-
-// #ifndef _USEBUMP_OFF
-//                 // Sample from normal map and decode from unity encoding
-//                 half3 tnormal = UnpackNormal(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, input.uv));
-                
-//                 // transform normal from tangent to world space
-//                 worldNormal.x = dot(half3(input.normalWS.x, input.tangentWS.x, input.bitangentWS.x), tnormal);
-//                 worldNormal.y = dot(half3(input.normalWS.y, input.tangentWS.y, input.bitangentWS.y), tnormal);
-//                 worldNormal.z = dot(half3(input.normalWS.z, input.tangentWS.z, input.bitangentWS.z), tnormal);
-// #else
-                worldNormal = input.normalWS;
-// #endif
-
-                inputData.normalWS = worldNormal;
+                inputData.normalWS = input.normalWS;
                 inputData.viewDirectionWS = GetWorldSpaceNormalizeViewDir(input.positionWS);
                 inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
 
@@ -313,19 +266,19 @@ Shader "Felix/Cel Opaque"
                 #endif
 
                 // Sampled color from base map
-                half3 sampledTex = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv).rgb;
-                d.litColor = sampledTex * _BaseColor.rgb;
+                half4 sampledTex = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv);
+                d.litColor = sampledTex.rgb * _BaseColor.rgb;
                 // Gets ambient lighting for shadow colour
-                d.shadowColor = sampledTex * half3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
+                d.shadowColor = sampledTex.rgb * half3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
 
                 half3 lighting = MyLightLoop(d, inputData);
-                         
+                
 #ifndef _USEEMISSION_OFF
-                lighting += SAMPLE_TEXTURE2D(_EmissionMap, sampler_EmissionMap, input.uv).rgb * _EmissionColor.rgb;
+                lighting += _EmissionColor.rgb;
 #endif
 
-                half4 finalColor = half4(lighting, 1);
-       
+                half4 finalColor = half4(lighting, sampledTex.a * _BaseColor.a);
+                
                 return finalColor;
             }
             
