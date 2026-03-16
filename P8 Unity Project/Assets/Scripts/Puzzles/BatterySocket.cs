@@ -85,9 +85,13 @@ public class BatterySocket : MonoBehaviour
                 grab.interactionManager.SelectExit(interactor, grab);
         }
 
-        // Wait one frame so XRI finishes processing the SelectExit before we
-        // override the rigidbody and transform.
-        yield return null;
+        // Wait until XRI has actually cleared the selection (max 10 frames safety)
+        int safetyFrames = 0;
+        while (grab != null && grab.isSelected && safetyFrames < 10)
+        {
+            yield return null;
+            safetyFrames++;
+        }
 
         // --- 2. Locate battery poles ---
         Transform batteryPlus  = battery.transform.Find(plusChildName);
@@ -137,31 +141,10 @@ public class BatterySocket : MonoBehaviour
         _snapInProgress  = false;
         _currentBattery  = battery;
 
-        // Subscribe so we know when the player pulls the battery back out
         if (grab != null)
-            grab.selectEntered.AddListener(OnBatteryRegrabbed);
+            grab.enabled = false;   // permanent — battery cannot be re-grabbed
 
         OnBatteryPlaced.Invoke();
-    }
-
-    // -------------------------------------------------------------------------
-
-    private void OnBatteryRegrabbed(SelectEnterEventArgs args)
-    {
-        if (_currentBattery == null) return;
-
-        var grab = _currentBattery.GetComponent<XRGrabInteractable>();
-        if (grab != null)
-            grab.selectEntered.RemoveListener(OnBatteryRegrabbed);
-
-        _currentBattery.transform.SetParent(null, worldPositionStays: true);
-
-        var rb = _currentBattery.GetComponent<Rigidbody>();
-        if (rb != null)
-            rb.isKinematic = false;
-
-        _batteryInserted = false;
-        _currentBattery  = null;
     }
 
     // -------------------------------------------------------------------------

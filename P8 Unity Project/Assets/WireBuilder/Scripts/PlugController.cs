@@ -2,6 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 
 public class PlugController : MonoBehaviour
@@ -16,36 +19,61 @@ public class PlugController : MonoBehaviour
     public Rigidbody endAnchorRB;
     [HideInInspector]
     public WireController wireController;
+
     public void OnPlugged()
     {
         OnWirePlugged.Invoke();
     }
 
-
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log(other.name);
-        if (other.gameObject == endAnchor.gameObject)
+        if (isConected) return;
+        if (endAnchor == null || other.gameObject != endAnchor.gameObject) return;
+        StartCoroutine(SnapWire());
+    }
+
+    private IEnumerator SnapWire()
+    {
+        isConected = true; // guard against re-entry immediately
+
+        var grab = endAnchor.GetComponent<XRGrabInteractable>();
+
+        // Force-release from the player's hand
+        if (grab != null && grab.isSelected)
         {
-            isConected = true;
-            endAnchorRB.isKinematic = true;
-            endAnchor.transform.position = plugPosition.position;
-            endAnchor.transform.rotation = transform.rotation;
-
-
-            OnPlugged();
+            var interactors = new List<IXRSelectInteractor>(grab.interactorsSelecting);
+            foreach (var interactor in interactors)
+                grab.interactionManager.SelectExit(interactor, grab);
         }
+
+        // Wait until XRI has cleared the selection
+        int safetyFrames = 0;
+        while (grab != null && grab.isSelected && safetyFrames < 10)
+        {
+            yield return null;
+            safetyFrames++;
+        }
+
+        // Snap transform
+        endAnchorRB.linearVelocity  = Vector3.zero;
+        endAnchorRB.angularVelocity = Vector3.zero;
+        endAnchorRB.isKinematic = true;
+        endAnchor.position = plugPosition.position;
+        Vector3 euler = new Vector3(transform.eulerAngles.x + 90,
+                                    transform.eulerAngles.y,
+                                    transform.eulerAngles.z);
+        endAnchor.rotation = Quaternion.Euler(euler);
+
+        // Permanently disable re-grabbing
+        if (grab != null)
+            grab.enabled = false;
+
+        OnPlugged();
     }
 
     private void Update()
     {
-
-        if (isConected)
-        {
+        if (isConected && endAnchorRB != null)
             endAnchorRB.isKinematic = true;
-            endAnchor.transform.position = plugPosition.position;
-            Vector3 eulerRotation = new Vector3(this.transform.eulerAngles.x + 90, this.transform.eulerAngles.y, this.transform.eulerAngles.z);
-            endAnchor.transform.rotation = Quaternion.Euler(eulerRotation);
-        }
     }
 }
