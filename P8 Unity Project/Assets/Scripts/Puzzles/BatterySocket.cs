@@ -93,6 +93,19 @@ public class BatterySocket : MonoBehaviour
             safetyFrames++;
         }
 
+        // --- 1b. Force-release from any HOMER grabber holding this battery ---
+        var homers = FindObjectsByType<HOMERRaycast>(FindObjectsSortMode.None);
+        foreach (var h in homers)
+        {
+            if (h.IsGrabbing && h.GrabbedObject == battery)
+            {
+                h.EndGrab();
+                break;
+            }
+        }
+        // Give HOMERManipulator one LateUpdate cycle to stop tracking the object
+        yield return null;
+
         // --- 2. Locate battery poles ---
         Transform batteryPlus  = battery.transform.Find(plusChildName);
         Transform batteryMinus = battery.transform.Find(minusChildName);

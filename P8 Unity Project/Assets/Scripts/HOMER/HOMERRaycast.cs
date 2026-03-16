@@ -164,7 +164,7 @@ public class HOMERRaycast : MonoBehaviour
                     BeginRetract();
                     break;
                 }
-                if (selectPressed && grabbableAtTarget != null)
+                if (selectPressed && grabbableAtTarget != null && grabbableAtTarget.enabled)
                     BeginGrab(grabbableAtTarget.gameObject);
                 break;
 

@@ -26,19 +26,19 @@ public class GoGoExtend : MonoBehaviour
     [Tooltip("Physical arm length in metres. The linear-zone threshold D = 2/3 × armLength.")]
     public float armLength = 0.6f;
 
-    [Tooltip("Go-Go coefficient k in metre units. " +
-             "The original paper uses k = 1/6 in centimetres, which equals ~16.67 in metres. " +
-             "Larger values produce more aggressive extension beyond D.")]
-    public float k = 100f / 6f;   // ≈ 16.67
+    [Tooltip("Maximum virtual reach in metres when the physical hand is fully extended " +
+             "(R_r = armLength). The Go-Go coefficient k is derived automatically from this.")]
+    public float maxReachDistance = 5f;
 
-    [Tooltip("Safety cap on R_v (virtual arm length) in metres.")]
-    public float maxVirtualDistance = 20f;
+    [Header("Rotation")]
+    [Tooltip("Euler offset applied on top of the controller rotation. " +
+             "Adjust Z to correct a clockwise/counter-clockwise roll misalignment.")]
+    public Vector3 rotationOffset = new Vector3(0f, 0f, 120f);
 
     [Header("Chest Estimation")]
     [Tooltip("Vertical offset below the HMD used to estimate chest position when chestTransform is null.")]
     public float chestHeadOffset = 0.3f;
 
-    [Header("Rotation")]
     [Tooltip("Slerp speed for mirroring the controller rotation onto the virtual hand.")]
     public float rotationSmoothing = 12f;
 
@@ -91,12 +91,19 @@ public class GoGoExtend : MonoBehaviour
         Vector3 dir = toController / R_r;
         float   D   = (2f / 3f) * armLength;
 
+        // Derive k so that at full arm extension (R_r = armLength) the virtual hand
+        // reaches maxReachDistance. Formula: maxReach = armLength + k*(armLength/3)²
+        float armOverThree = armLength / 3f;
+        float k = armOverThree > 1e-5f
+            ? Mathf.Max(0f, maxReachDistance - armLength) / (armOverThree * armOverThree)
+            : 0f;
+
         // --- Go-Go mapping F(R_r) ---
         float R_v = R_r < D
             ? R_r                              // linear zone
             : R_r + k * (R_r - D) * (R_r - D); // non-linear zone
 
-        R_v = Mathf.Min(R_v, maxVirtualDistance);
+        R_v = Mathf.Min(R_v, maxReachDistance);
 
         CurrentRr = R_r;
         CurrentRv = R_v;
@@ -105,10 +112,11 @@ public class GoGoExtend : MonoBehaviour
         // but at the mapped (potentially extended) distance from the chest.
         virtualHand.position = chestPos + dir * R_v;
 
-        // Mirror the controller rotation with smoothing.
+        // Mirror the controller rotation with smoothing, applying a correction offset.
+        Quaternion target = transform.rotation * Quaternion.Euler(rotationOffset);
         virtualHand.rotation = Quaternion.Slerp(
             virtualHand.rotation,
-            transform.rotation,
+            target,
             rotationSmoothing * Time.deltaTime);
     }
 
