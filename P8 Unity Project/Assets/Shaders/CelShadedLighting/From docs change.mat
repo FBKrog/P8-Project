@@ -31,6 +31,8 @@ Material:
     m_Floats:
     - _ShadowBlur: 0.002
     - _ShadowCutoff: 0.5
+    - _SpecularCutoff: 0.5
+    - _UseSpecular: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _ShadowColor: {r: 0.075, g: 0, b: 0.15, a: 0.9}
