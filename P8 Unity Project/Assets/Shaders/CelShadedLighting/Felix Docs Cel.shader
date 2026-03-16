@@ -20,8 +20,8 @@ Shader "Felix/Cel Opaque"
         _EmissionMap("Emission", 2D) = "white" {}
 
         [Header(Shadows)]
-        _ShadowCutoff("Shadow Cutoff", Range(0.0, 1.0)) = 0.5
-        _ShadowBlur("Shadow Edge Blur", Range(0.0, 0.01)) = 0.002
+        _ShadowSoftCutoff("Soft Shadow Cutoff", Range(0.0, 1.0)) = 0.8
+        _ShadowCutoff("Hard Shadow Cutoff", Range(0.0, 1.0)) = 0.5
     }
     
     SubShader
@@ -72,9 +72,9 @@ Shader "Felix/Cel Opaque"
 
             // Required for XR Single Pass Instanced rendering
             #pragma multi_compile_instancing
-
+            
             // #include "Packages/com.unity.render-pipelines.universal/Shaders/LitGBufferPass.hlsl"
-
+            
             // Included as per https://docs.unity3d.com/6000.3/Documentation/Manual/urp/use-built-in-shader-methods-additional-lights-fplus.html
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/CommonMaterial.hlsl"
@@ -94,6 +94,8 @@ Shader "Felix/Cel Opaque"
                 // Lightmap declarations from https://github.com/Unity-Technologies/Graphics/blob/b81f05bd21ab1bf7a240dd30fb4ecee4cff2d4e5/Packages/com.unity.render-pipelines.universal/Shaders/SimpleLitGBufferPass.hlsl#L113-L127
                 float2 staticLightmapUV   : TEXCOORD1;
                 float2 dynamicLightmapUV  : TEXCOORD2;
+
+                // Required for XR Single Pass Instanced rendering 
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
             
@@ -107,16 +109,18 @@ Shader "Felix/Cel Opaque"
 //                 half3 bitangentWS  : TEXCOORD4;
 // #endif
                 float2 uv          : TEXCOORD0;
-
+                
                 // Lightmaps and probeOcllusion from https://github.com/Unity-Technologies/Graphics/blob/b81f05bd21ab1bf7a240dd30fb4ecee4cff2d4e5/Packages/com.unity.render-pipelines.universal/Shaders/SimpleLitGBufferPass.hlsl#L113-L127
                 DECLARE_LIGHTMAP_OR_SH(staticLightmapUV, vertexSH, 7);
                 #ifdef DYNAMICLIGHTMAP_ON
                     float2  dynamicLightmapUV : TEXCOORD8; // Dynamic lightmap UVs
                 #endif
-
+                
                 #ifdef USE_APV_PROBE_OCCLUSION
                     float4 probeOcclusion : TEXCOORD9;
                 #endif
+
+                // Required for XR Single Pass Instanced rendering 
                 UNITY_VERTEX_OUTPUT_STEREO
             };
 
@@ -149,6 +153,7 @@ Shader "Felix/Cel Opaque"
                 float4 _EmissionMap_ST;
 #endif
                 float _ShadowCutoff;
+                float _ShadowSoftCutoff;
                 float _ShadowBlur;
                 float _SpecularCutoff;
                 half4 _EmissionColor;
@@ -157,14 +162,17 @@ Shader "Felix/Cel Opaque"
             Varyings vert(Attributes IN)
             {
                 Varyings OUT;
+
+                // Required for XR Single Pass Instanced rendering 
                 UNITY_SETUP_INSTANCE_ID(IN);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
+
                 // Get object position in world and object space
                 OUT.positionWS = TransformObjectToWorld(IN.positionOS.xyz);
                 OUT.positionCS = TransformWorldToHClip(OUT.positionWS);
                 // Get object UV map
                 OUT.uv = TRANSFORM_TEX(IN.uv, _BaseMap);
-
+                
                 // Get object normals
                 OUT.normalWS = TransformObjectToWorldNormal(IN.normalOS);
 // #ifndef _USEBUMP_OFF
@@ -210,18 +218,34 @@ Shader "Felix/Cel Opaque"
 
                 return lightSpecularColor;
             }
+
+            // Makes a lambert cel shadow with two steps
+            half LambertDoubleCelStep(half lambertLight)
+            {
+                return saturate(step(_ShadowCutoff, lambertLight) * 0.5 + step(_ShadowSoftCutoff, lambertLight)); 
+            }
             
             // Calculations to be done per light source
-            half3 MyLightingFunction(float3 normalWS, Light light, half shadowValue)
+            half3 MyMainLightingFunction(float3 normalWS, Light light, half shadowValue)
             {
-
                 // Half lambert diffuse
                 float NdotL = dot(normalWS, normalize(light.direction));
-                NdotL = (NdotL + 1) * 0.5 * pow(light.distanceAttenuation, 0.1);
+
+                // Remove self-cast shadows at 0.5 or lower (75% of shadows since -1 to 1 range from dot product)
+                float alteredShadowValue = lerp(1, shadowValue, step(0.5, NdotL));
+
+                NdotL = (NdotL + 1) * 0.5 * shadowValue;
                 NdotL = saturate(NdotL);
-                NdotL = smoothstep(_ShadowCutoff, _ShadowCutoff + _ShadowBlur, NdotL) * light.shadowAttenuation;
+                NdotL = LambertDoubleCelStep(NdotL * pow(light.distanceAttenuation, 0.1) * light.shadowAttenuation);
 
                 return saturate(NdotL) * light.color;
+            }
+            
+            
+            // Calculations to be done per light source
+            half3 MyAdditionalLightingFunction(float3 normalWS, Light light)
+            {
+                return MyMainLightingFunction(normalWS, light, 1);
             }
             
             // This function loops through the lights in the scene
@@ -232,7 +256,7 @@ Shader "Felix/Cel Opaque"
                 // Get the main light
                 Light mainLight = GetMainLight();
                 half shadowValue = MainLightRealtimeShadow(d.shadowCoord);
-                lighting += MyLightingFunction(inputData.normalWS, mainLight, shadowValue);
+                lighting += MyMainLightingFunction(inputData.normalWS, mainLight, shadowValue);
                 lighting += MyBlinnPhong(mainLight, inputData);
                 
                 // Get additional lights
@@ -244,7 +268,7 @@ Shader "Felix/Cel Opaque"
                 {
                     Light additionalLight = GetAdditionalLight(lightIndex, inputData.positionWS, half4(1,1,1,1));
                     shadowValue = AdditionalLightRealtimeShadow(lightIndex, inputData.positionWS);
-                    lighting += MyLightingFunction(inputData.normalWS, additionalLight, shadowValue);
+                    lighting += MyAdditionalLightingFunction(inputData.normalWS, additionalLight);
                     lighting += MyBlinnPhong(additionalLight, inputData);
                 }
                 #endif
@@ -254,22 +278,24 @@ Shader "Felix/Cel Opaque"
                 LIGHT_LOOP_BEGIN(pixelLightCount)
                     Light additionalLight = GetAdditionalLight(lightIndex, inputData.positionWS, half4(1,1,1,1));
                     shadowValue = AdditionalLightRealtimeShadow(lightIndex, inputData.positionWS);
-                    lighting += MyLightingFunction(inputData.normalWS, additionalLight, shadowValue);
+                    lighting += MyAdditionalLightingFunction(inputData.normalWS, additionalLight);
                     lighting += MyBlinnPhong(additionalLight, inputData);
                 LIGHT_LOOP_END
                 
                 #endif
 
-                return lerp(d.shadowColor, d.litColor, lighting);
+                return lerp(d.shadowColor * d.litColor, d.litColor, lighting);
             }
             
             half4 frag(Varyings input) : SV_Target0
             {
+                // Required for XR Single Pass Instanced rendering 
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+
                 // The Forward+ light loop (LIGHT_LOOP_BEGIN) requires the InputData struct to be in its scope.
                 InputData inputData = (InputData)0;
                 inputData.positionWS = input.positionWS;
-
+                
                 half3 worldNormal;
 
 // #ifndef _USEBUMP_OFF
