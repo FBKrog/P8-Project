@@ -66,9 +66,12 @@ Shader "Felix/Cel Trans"
             // This multi_compile declaration is required for accessing baked lightmaps
             // Included as per https://discussions.unity.com/t/how-do-i-sample-baked-gi-in-urp-hlsl/1653774
             #pragma multi_compile _ LIGHTMAP_ON
-            
+
+            // Required for XR Single Pass Instanced rendering
+            #pragma multi_compile_instancing
+
             // #include "Packages/com.unity.render-pipelines.universal/Shaders/LitGBufferPass.hlsl"
-            
+
             // Included as per https://docs.unity3d.com/6000.3/Documentation/Manual/urp/use-built-in-shader-methods-additional-lights-fplus.html
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/CommonMaterial.hlsl"
@@ -85,6 +88,7 @@ Shader "Felix/Cel Trans"
                 // Lightmap declarations from https://github.com/Unity-Technologies/Graphics/blob/b81f05bd21ab1bf7a240dd30fb4ecee4cff2d4e5/Packages/com.unity.render-pipelines.universal/Shaders/SimpleLitGBufferPass.hlsl#L113-L127
                 float2 staticLightmapUV   : TEXCOORD1;
                 float2 dynamicLightmapUV  : TEXCOORD2;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
             };
             
             struct Varyings
@@ -93,16 +97,17 @@ Shader "Felix/Cel Trans"
                 float3 positionWS  : TEXCOORD1;
                 float3 normalWS    : TEXCOORD2;
                 float2 uv           : TEXCOORD0;
-                
+
                 // Lightmaps and probeOcllusion from https://github.com/Unity-Technologies/Graphics/blob/b81f05bd21ab1bf7a240dd30fb4ecee4cff2d4e5/Packages/com.unity.render-pipelines.universal/Shaders/SimpleLitGBufferPass.hlsl#L113-L127
                 DECLARE_LIGHTMAP_OR_SH(staticLightmapUV, vertexSH, 7);
                 #ifdef DYNAMICLIGHTMAP_ON
                     float2  dynamicLightmapUV : TEXCOORD8; // Dynamic lightmap UVs
                 #endif
-                
+
                 #ifdef USE_APV_PROBE_OCCLUSION
                     float4 probeOcclusion : TEXCOORD9;
                 #endif
+                UNITY_VERTEX_OUTPUT_STEREO
             };
 
             struct CustomLightingData
@@ -128,6 +133,8 @@ Shader "Felix/Cel Trans"
             Varyings vert(Attributes IN)
             {
                 Varyings OUT;
+                UNITY_SETUP_INSTANCE_ID(IN);
+                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
                 // Get object position in world and object space
                 OUT.positionWS = TransformObjectToWorld(IN.positionOS.xyz);
                 OUT.positionCS = TransformWorldToHClip(OUT.positionWS);
@@ -226,6 +233,7 @@ Shader "Felix/Cel Trans"
             
             half4 frag(Varyings input) : SV_Target0
             {
+                UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
                 // The Forward+ light loop (LIGHT_LOOP_BEGIN) requires the InputData struct to be in its scope.
                 InputData inputData = (InputData)0;
                 inputData.positionWS = input.positionWS;
