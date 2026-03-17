@@ -65,6 +65,9 @@ public class LeverGrab : MonoBehaviour
     private Vector3    restDir;            // world-space rest direction of lever arm (set on grab start)
     private float      currentAngle;       // current lever angle this frame
 
+    private Vector3 grabRefDirProjected; // reference direction for next frame's incremental delta
+    private bool    isFirstGrabFrame;    // true on the first grabbed LateUpdate; skips angle update
+
     // ── Lifecycle ──────────────────────────────────────────────────────────
 
     void Awake()
@@ -158,20 +161,37 @@ public class LeverGrab : MonoBehaviour
         Vector3 projected   = Vector3.ProjectOnPlane(pivotToHand, hingeWorldAxis);
         if (projected.sqrMagnitude < 1e-6f) return;
 
-        Vector3 restDirProjected = Vector3.ProjectOnPlane(restDir, hingeWorldAxis);
-        if (restDirProjected.sqrMagnitude < 1e-6f) return;
+        // First grabbed frame: all technique LateUpdates (order 100) have now run.
+        // Capture the reference direction here — this is the only moment where the virtual hand
+        // is in its actual first-frame position (before any arc-lock correction).
+        if (isFirstGrabFrame)
+        {
+            isFirstGrabFrame = false;
+            OverrideVirtualHandPosition(leverHandlePoint.position);
+            // HOMER respects arc-lock (starts from handle next frame) → reference = handle direction.
+            // GoGo/DAOM recompute from scratch next frame → reference = their actual current direction.
+            grabRefDirProjected = (activeTechnique == ActiveTechnique.Homer)
+                ? GetHandleDirProjected()
+                : projected.normalized;
+            return; // Lever holds currentAngle this frame; movement tracking starts next frame.
+        }
 
-        float angle = Vector3.SignedAngle(restDirProjected, projected.normalized, hingeWorldAxis);
-        angle = Mathf.Clamp(angle, 0f, snapToAngle);
-        currentAngle = angle;
+        // Incremental delta: how much did the projected direction rotate since last frame?
+        float angleDelta = Vector3.SignedAngle(grabRefDirProjected, projected.normalized, hingeWorldAxis);
+        float angle      = Mathf.Clamp(currentAngle + angleDelta, 0f, snapToAngle);
+        currentAngle     = angle;
 
-        // Fix 3: drive rotation via AngleAxis — no Euler drift, works for any axis.
         transform.rotation = Quaternion.AngleAxis(angle, hingeWorldAxis) * restWorldRotation;
 
-        // 4. Arc-lock: snap the virtual hand back onto the handle so it can't drift off the plane.
         OverrideVirtualHandPosition(leverHandlePoint.position);
 
-        // 5. Trigger snap once the player has pulled far enough.
+        // Update reference for next frame (technique-aware).
+        // HOMER respects arc-lock → reference = handle direction (where HOMER will start from).
+        // GoGo/DAOM ignore arc-lock → reference = their actual direction (pre-arc-lock projected).
+        grabRefDirProjected = (activeTechnique == ActiveTechnique.Homer)
+            ? GetHandleDirProjected()
+            : projected.normalized;
+
         if (angle >= activationAngle)
             StartCoroutine(SnapAndActivate());
     }
@@ -229,10 +249,10 @@ public class LeverGrab : MonoBehaviour
     {
         if (isGrabbed) return;
 
-        activeTechnique = technique;
-        isGrabbed       = true;
+        activeTechnique  = technique;
+        isGrabbed        = true;
+        isFirstGrabFrame = true; // reference captured in first grabbed LateUpdate (after technique scripts)
 
-        // Fix 1: repair position immediately (HOMER's BeginGrab may have moved it).
         transform.position = leverFixedPosition;
     }
 
@@ -305,6 +325,13 @@ public class LeverGrab : MonoBehaviour
     }
 
     // ── Helpers ────────────────────────────────────────────────────────────
+
+    /// <summary>Returns the projected direction from the lever pivot to the handle point.</summary>
+    private Vector3 GetHandleDirProjected()
+    {
+        Vector3 d = Vector3.ProjectOnPlane(leverHandlePoint.position - transform.position, hingeWorldAxis);
+        return d.sqrMagnitude > 1e-6f ? d.normalized : grabRefDirProjected;
+    }
 
     private Vector3 GetVirtualHandPosition()
     {
