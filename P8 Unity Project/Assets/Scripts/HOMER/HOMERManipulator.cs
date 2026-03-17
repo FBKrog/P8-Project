@@ -24,6 +24,7 @@ using UnityEngine;
 ///
 ///   Using delta (not absolute) lets snap zones override position each frame without fighting.
 /// </summary>
+[DefaultExecutionOrder(100)]
 public class HOMERManipulator : MonoBehaviour
 {
     [Header("References")]
@@ -93,7 +94,9 @@ public class HOMERManipulator : MonoBehaviour
 
         // Move the grabbed object by the same delta (not clamped to hand position).
         // This lets snap zones set the object's position without us overriding it.
-        if (homer.IsGrabbing && homer.GrabbedObject != null)
+        // LeverGrab manages its own transform — skip it here.
+        if (homer.IsGrabbing && homer.GrabbedObject != null
+            && homer.GrabbedObject.GetComponent<LeverGrab>() == null)
         {
             homer.GrabbedObject.transform.position += scaledDelta;
             homer.GrabbedObject.transform.rotation  = homer.PhysicalHand.rotation * rotationOffset;

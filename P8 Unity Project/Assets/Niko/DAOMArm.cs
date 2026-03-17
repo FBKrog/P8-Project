@@ -4,8 +4,13 @@ using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
+[DefaultExecutionOrder(100)]
 public class DAOMArm : MonoBehaviour
 {
+    public static DAOMArm ActiveInstance { get; private set; }
+    public XRDirectInteractor Interactor => interactor;
+    public Transform DaomIKTarget => daomIKTarget.transform;
+
     [Header("Player")]
     [SerializeField] GameObject playerRoot;
     [SerializeField] GameObject playerIKTarget; // Called player hand in comments for readability
@@ -57,6 +62,16 @@ public class DAOMArm : MonoBehaviour
     bool recalling = false;
 
     public bool Recalling => recalling;
+
+    void Awake()
+    {
+        ActiveInstance = this;
+    }
+
+    void OnDestroy()
+    {
+        if (ActiveInstance == this) ActiveInstance = null;
+    }
 
     void OnEnable()
     {

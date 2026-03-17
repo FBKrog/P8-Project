@@ -15,6 +15,7 @@ using UnityEngine;
 /// where D = 2/3 × armLength, and k ≈ 16.67 in metre units
 /// (equivalent to the paper's k = 1/6 in centimetre units).
 /// </summary>
+[DefaultExecutionOrder(100)]
 public class GoGoExtend : MonoBehaviour
 {
     [Header("References")]

@@ -217,7 +217,9 @@ public class HOMERRaycast : MonoBehaviour
 
         // Object joins the virtual hand (which may have moved since the initial extension).
         // Hand is already unparented from the Extending phase; don't move it.
-        obj.transform.position = virtualHand.position;
+        // LeverGrab owns its own position — skip the teleport to avoid fighting LateUpdate.
+        if (obj.GetComponent<LeverGrab>() == null)
+            obj.transform.position = virtualHand.position;
         virtualHand.rotation   = transform.rotation;
 
         state = State.Grabbed;
