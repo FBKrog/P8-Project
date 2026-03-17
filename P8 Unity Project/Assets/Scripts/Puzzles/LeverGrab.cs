@@ -8,6 +8,8 @@ using UnityEngine.XR.Interaction.Toolkit.Interactors;
 using UnityEditor;
 #endif
 
+public enum LeverTechnique { Homer, GoGo, Daom }
+
 /// <summary>
 /// Lever puzzle component. Attach to the lever GameObject alongside an XRGrabInteractable
 /// and a Rigidbody (no HingeJoint needed — LeverGrab owns the transform).
@@ -29,6 +31,11 @@ public class LeverGrab : MonoBehaviour
     [Tooltip("The XRDirectInteractor that sits on GoGo's virtual hand GameObject.")]
     public XRDirectInteractor goGoInteractor;
     // DAOM resolved at runtime via DAOMArm.ActiveInstance
+
+    [Header("Allowed Technique")]
+    [Tooltip("Only grabs from this technique are accepted. Set in the Inspector to match the " +
+             "interaction mode active for this lever. Prevents interactor identity ambiguity.")]
+    [SerializeField] private LeverTechnique allowedTechnique = LeverTechnique.Homer;
 
     [Header("Lever Geometry")]
     [Tooltip("Empty child at the grip end of the lever arm. If null, uses the lever pivot.")]
@@ -67,6 +74,8 @@ public class LeverGrab : MonoBehaviour
 
     private Vector3 grabRefDirProjected; // reference direction for next frame's incremental delta
     private bool    isFirstGrabFrame;    // true on the first grabbed LateUpdate; skips angle update
+
+    private int _dbgFrame; // throttle per-frame logs
 
     // ── Lifecycle ──────────────────────────────────────────────────────────
 
@@ -107,6 +116,8 @@ public class LeverGrab : MonoBehaviour
             leverGrabbable.selectEntered.AddListener(OnSelectEntered);
             leverGrabbable.selectExited.AddListener(OnSelectExited);
         }
+
+        Debug.Log($"[LeverGrab:{name}] Awake — fixedPos={leverFixedPosition:F3}  hingeAxisLocal={hingeAxisLocal}  hingeAxisWorld={hingeWorldAxis:F3}  restDir={restDir:F3}  handle={(leverHandlePoint == transform ? "pivot (none assigned)" : leverHandlePoint.name)}");
     }
 
     void OnEnable()
@@ -154,12 +165,20 @@ public class LeverGrab : MonoBehaviour
 
         // 1. Read virtual hand position AFTER the technique has updated it this frame.
         Vector3 virtualHandPos = GetVirtualHandPosition();
-        if (virtualHandPos == Vector3.zero) return;
+        if (virtualHandPos == Vector3.zero)
+        {
+            Debug.LogWarning($"[LeverGrab:{name}] LateUpdate — virtual hand returned zero, skipping (technique={activeTechnique})");
+            return;
+        }
 
         // 2. Arc-lock math — project onto the rotation plane (normal = hinge axis).
         Vector3 pivotToHand = virtualHandPos - transform.position;
         Vector3 projected   = Vector3.ProjectOnPlane(pivotToHand, hingeWorldAxis);
-        if (projected.sqrMagnitude < 1e-6f) return;
+        if (projected.sqrMagnitude < 1e-6f)
+        {
+            Debug.LogWarning($"[LeverGrab:{name}] LateUpdate — projected vector near-zero (hand directly on hinge axis?), skipping");
+            return;
+        }
 
         // First grabbed frame: all technique LateUpdates (order 100) have now run.
         // Capture the reference direction here — this is the only moment where the virtual hand
@@ -173,12 +192,15 @@ public class LeverGrab : MonoBehaviour
             grabRefDirProjected = (activeTechnique == ActiveTechnique.Homer)
                 ? GetHandleDirProjected()
                 : projected.normalized;
+            Debug.Log($"[LeverGrab:{name}] LateUpdate FRAME-1 — reference captured  technique={activeTechnique}  handPos={virtualHandPos:F3}  projectedDir={projected.normalized:F3}  grabRef={grabRefDirProjected:F3}  currentAngle={currentAngle:F1}°");
             return; // Lever holds currentAngle this frame; movement tracking starts next frame.
         }
 
         // Incremental delta: how much did the projected direction rotate since last frame?
         float angleDelta = Vector3.SignedAngle(grabRefDirProjected, projected.normalized, hingeWorldAxis);
-        float angle      = Mathf.Clamp(currentAngle + angleDelta, 0f, snapToAngle);
+        float lo         = Mathf.Min(0f, snapToAngle);
+        float hi         = Mathf.Max(0f, snapToAngle);
+        float angle      = Mathf.Clamp(currentAngle + angleDelta, lo, hi);
         currentAngle     = angle;
 
         transform.rotation = Quaternion.AngleAxis(angle, hingeWorldAxis) * restWorldRotation;
@@ -192,7 +214,13 @@ public class LeverGrab : MonoBehaviour
             ? GetHandleDirProjected()
             : projected.normalized;
 
-        if (angle >= activationAngle)
+        // Log every 10 frames to avoid spam.
+        _dbgFrame++;
+        if (_dbgFrame % 10 == 0)
+            Debug.Log($"[LeverGrab:{name}] LateUpdate (frame {_dbgFrame}) — technique={activeTechnique}  handPos={virtualHandPos:F3}  projDir={projected.normalized:F3}  delta={angleDelta:+0.0;-0.0}°  angle={angle:F1}°  activationAngle={activationAngle:F1}°");
+
+        bool triggered = snapToAngle >= 0f ? (angle >= activationAngle) : (angle <= activationAngle);
+        if (triggered && !isActivated)
             StartCoroutine(SnapAndActivate());
     }
 
@@ -200,33 +228,64 @@ public class LeverGrab : MonoBehaviour
 
     private void OnHomerGrabStarted(GameObject obj)
     {
-        if (obj != gameObject) return;
+        if (obj != gameObject)
+        {
+            Debug.Log($"[LeverGrab:{name}] OnHomerGrabStarted — ignored (grabbed '{obj?.name}', not this lever)");
+            return;
+        }
+        if (allowedTechnique != LeverTechnique.Homer)
+        {
+            Debug.Log($"[LeverGrab:{name}] OnHomerGrabStarted — skipped (allowedTechnique={allowedTechnique})");
+            return;
+        }
+        Debug.Log($"[LeverGrab:{name}] OnHomerGrabStarted — matched, calling StartGrab(Homer)");
         StartGrab(ActiveTechnique.Homer);
     }
 
     private void OnHomerGrabEnded()
     {
         if (activeTechnique == ActiveTechnique.Homer && isGrabbed && !isActivated)
+        {
+            Debug.Log($"[LeverGrab:{name}] OnHomerGrabEnded — releasing at angle={currentAngle:F1}°");
             EndGrab();
+        }
+        else
+        {
+            Debug.Log($"[LeverGrab:{name}] OnHomerGrabEnded — ignored (technique={activeTechnique} isGrabbed={isGrabbed} isActivated={isActivated})");
+        }
     }
 
     // ── XRI select event handlers (GoGo + DAOM) ───────────────────────────
 
     private void OnSelectEntered(SelectEnterEventArgs args)
     {
-        if (isActivated) return;
+        if (isActivated)
+        {
+            Debug.Log($"[LeverGrab:{name}] OnSelectEntered — ignored (already activated)");
+            return;
+        }
 
         ActiveTechnique technique = ActiveTechnique.None;
+        string interactorName = args.interactorObject?.transform?.name ?? "null";
 
-        if (goGoInteractor != null &&
+        if (allowedTechnique == LeverTechnique.GoGo &&
+            goGoInteractor != null &&
             args.interactorObject as XRDirectInteractor == goGoInteractor)
         {
             technique = ActiveTechnique.GoGo;
+            Debug.Log($"[LeverGrab:{name}] OnSelectEntered — matched GoGo interactor '{interactorName}'");
         }
-        else if (DAOMArm.ActiveInstance != null &&
+        else if (allowedTechnique == LeverTechnique.Daom &&
+                 DAOMArm.ActiveInstance != null &&
                  args.interactorObject as XRDirectInteractor == DAOMArm.ActiveInstance.Interactor)
         {
             technique = ActiveTechnique.Daom;
+            Debug.Log($"[LeverGrab:{name}] OnSelectEntered — matched DAOM interactor '{interactorName}'");
+        }
+        else
+        {
+            Debug.Log($"[LeverGrab:{name}] OnSelectEntered — ignored " +
+                      $"(allowedTechnique={allowedTechnique}, interactor='{interactorName}')");
         }
 
         if (technique != ActiveTechnique.None)
@@ -235,11 +294,17 @@ public class LeverGrab : MonoBehaviour
 
     private void OnSelectExited(SelectExitEventArgs args)
     {
+        string interactorName = args.interactorObject?.transform?.name ?? "null";
         // Only handle GoGo/DAOM physical releases — HOMER uses its own GrabEnded event.
         if ((activeTechnique == ActiveTechnique.GoGo || activeTechnique == ActiveTechnique.Daom)
             && isGrabbed && !isActivated)
         {
+            Debug.Log($"[LeverGrab:{name}] OnSelectExited — releasing {activeTechnique} (interactor '{interactorName}') at angle={currentAngle:F1}°");
             EndGrab();
+        }
+        else
+        {
+            Debug.Log($"[LeverGrab:{name}] OnSelectExited — ignored (technique={activeTechnique} isGrabbed={isGrabbed} isActivated={isActivated} interactor='{interactorName}')");
         }
     }
 
@@ -247,18 +312,27 @@ public class LeverGrab : MonoBehaviour
 
     private void StartGrab(ActiveTechnique technique)
     {
-        if (isGrabbed) return;
+        if (isGrabbed)
+        {
+            Debug.LogWarning($"[LeverGrab:{name}] StartGrab({technique}) — IGNORED, already grabbed by {activeTechnique}");
+            return;
+        }
 
         activeTechnique  = technique;
         isGrabbed        = true;
         isFirstGrabFrame = true; // reference captured in first grabbed LateUpdate (after technique scripts)
+        _dbgFrame        = 0;
 
         transform.position = leverFixedPosition;
+
+        Debug.Log($"[LeverGrab:{name}] StartGrab — technique={technique}  currentAngle={currentAngle:F1}°  leverPos={leverFixedPosition:F3}");
     }
 
     private void EndGrab()
     {
         if (!isGrabbed) return;
+
+        Debug.Log($"[LeverGrab:{name}] EndGrab — technique={activeTechnique}  heldAngle={currentAngle:F1}°");
 
         isGrabbed       = false;
         activeTechnique = ActiveTechnique.None;
@@ -275,24 +349,41 @@ public class LeverGrab : MonoBehaviour
         if (!isGrabbed) return;
 
         ActiveTechnique technique = activeTechnique;
+        Debug.Log($"[LeverGrab:{name}] ForceRelease — technique={technique}  angle={currentAngle:F1}°");
+
         isGrabbed       = false;  // guard against re-entry FIRST
         activeTechnique = ActiveTechnique.None;
 
         switch (technique)
         {
             case ActiveTechnique.Homer:
+                Debug.Log($"[LeverGrab:{name}] ForceRelease — calling homer.EndGrab()");
                 homer?.EndGrab();
                 break;
 
             case ActiveTechnique.GoGo:
                 if (goGoInteractor != null && leverGrabbable != null)
+                {
+                    Debug.Log($"[LeverGrab:{name}] ForceRelease — calling SelectExit on GoGo interactor");
                     leverGrabbable.interactionManager.SelectExit((IXRSelectInteractor)goGoInteractor, (IXRSelectInteractable)leverGrabbable);
+                }
+                else
+                {
+                    Debug.LogWarning($"[LeverGrab:{name}] ForceRelease — GoGo release skipped (goGoInteractor={goGoInteractor != null} leverGrabbable={leverGrabbable != null})");
+                }
                 break;
 
             case ActiveTechnique.Daom:
                 var daom = DAOMArm.ActiveInstance;
                 if (daom?.Interactor != null && leverGrabbable != null)
+                {
+                    Debug.Log($"[LeverGrab:{name}] ForceRelease — calling SelectExit on DAOM interactor");
                     leverGrabbable.interactionManager.SelectExit((IXRSelectInteractor)daom.Interactor, (IXRSelectInteractable)leverGrabbable);
+                }
+                else
+                {
+                    Debug.LogWarning($"[LeverGrab:{name}] ForceRelease — DAOM release skipped (daom={daom != null} interactor={daom?.Interactor != null} leverGrabbable={leverGrabbable != null})");
+                }
                 break;
         }
     }
@@ -301,6 +392,8 @@ public class LeverGrab : MonoBehaviour
 
     private IEnumerator SnapAndActivate()
     {
+        Debug.Log($"[LeverGrab:{name}] SnapAndActivate — START  currentAngle={currentAngle:F1}°  snapToAngle={snapToAngle:F1}°");
+
         isActivated = true;
         ForceRelease();
 
@@ -321,6 +414,7 @@ public class LeverGrab : MonoBehaviour
         if (leverGrabbable != null)
             leverGrabbable.enabled = false;
 
+        Debug.Log($"[LeverGrab:{name}] SnapAndActivate — COMPLETE  finalAngle={snapToAngle:F1}°  firing OnLeverActivated");
         OnLeverActivated.Invoke();
     }
 
