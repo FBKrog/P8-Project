@@ -1,4 +1,4 @@
-Shader "Felix/Cel Opaque"
+Shader "Felix/Cel Cutscene"
 {
     Properties
     { 
@@ -19,9 +19,9 @@ Shader "Felix/Cel Opaque"
         [HDR] _EmissionColor("Color", Color) = (0,0,0)
         _EmissionMap("Emission", 2D) = "white" {}
 
-
-        [HideInInspector] _ShadowSoftCutoff("Soft Shadow Cutoff", Range(0.0, 1.0)) = 0.7
-        [HideInInspector] _ShadowCutoff("Hard Shadow Cutoff", Range(0.0, 1.0)) = 0.4
+        [Header(Shadows)]
+        _ShadowSoftCutoff("Soft Shadow Cutoff", Range(0.0, 1.0)) = 0.7
+        _ShadowCutoff("Hard Shadow Cutoff", Range(0.0, 1.0)) = 0.4
     }
     
     SubShader
@@ -284,7 +284,7 @@ Shader "Felix/Cel Opaque"
                 
                 #endif
 
-                return lerp(d.shadowColor * d.litColor, d.litColor, lighting);
+                return lerp(d.shadowColor, d.litColor, lighting);
             }
             
             half4 frag(Varyings input) : SV_Target0
@@ -350,7 +350,7 @@ Shader "Felix/Cel Opaque"
                 half3 sampledTex = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv).rgb;
                 d.litColor = sampledTex * _BaseColor.rgb;
                 // Gets ambient lighting for shadow colour
-                d.shadowColor = sampledTex * half3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
+                d.shadowColor = half3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
 
                 half3 lighting = MyLightLoop(d, inputData);
                          

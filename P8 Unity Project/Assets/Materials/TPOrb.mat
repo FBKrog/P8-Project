@@ -26,6 +26,7 @@ Material:
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _EMISSION
+  - _USEEMISSION_OFF
   - _USESPECULAR_OFF
   m_InvalidKeywords:
   - _ALPHAPREMULTIPLY_ON
@@ -126,6 +127,7 @@ Material:
     - _ReceiveShadows: 1
     - _ShadowBlur: 0.002
     - _ShadowCutoff: 0.5
+    - _ShadowSoftCutoff: 0.8
     - _Smoothness: 0.764
     - _SmoothnessTextureChannel: 0
     - _SpecularCutoff: 0.5
