@@ -377,7 +377,7 @@ GameObject:
   - component: {fileID: 376644184}
   - component: {fileID: 376644183}
   - component: {fileID: 376644182}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Non-Teleportable Ground (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1923,6 +1923,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Teleportation Environment
       objectReference: {fileID: 0}
+    - target: {fileID: 1565887663814566040, guid: 3e07eccb5e6f459d886de95044adb1d9, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
     - target: {fileID: 1565887663814566041, guid: 3e07eccb5e6f459d886de95044adb1d9, type: 3}
       propertyPath: m_RootOrder
       value: 4
@@ -1970,6 +1974,10 @@ PrefabInstance:
     - target: {fileID: 1565887663999455726, guid: 3e07eccb5e6f459d886de95044adb1d9, type: 3}
       propertyPath: m_Enabled
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6895887226161143353, guid: 3e07eccb5e6f459d886de95044adb1d9, type: 3}
+      propertyPath: m_Layer
+      value: 9
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
@@ -5316,10 +5324,30 @@ PrefabInstance:
       propertyPath: m_Name
       value: KylePlayer
       objectReference: {fileID: 0}
+    - target: {fileID: 2950894536043411709, guid: 7427c09e3b0618d47b95979d1e3196ce, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4060438285149270818, guid: 7427c09e3b0618d47b95979d1e3196ce, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5884440064947443058, guid: 7427c09e3b0618d47b95979d1e3196ce, type: 3}
+      propertyPath: aimInput
+      value: 
+      objectReference: {fileID: 7904272356298805229, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+    - target: {fileID: 5884440064947443058, guid: 7427c09e3b0618d47b95979d1e3196ce, type: 3}
+      propertyPath: launchInput
+      value: 
+      objectReference: {fileID: 7904272356298805229, guid: c348712bda248c246b8c49b3db54643f, type: 3}
     - target: {fileID: 6147463475287948901, guid: 7427c09e3b0618d47b95979d1e3196ce, type: 3}
       propertyPath: m_InteractionManager
       value: 
       objectReference: {fileID: 1448108683}
+    - target: {fileID: 6860443578747232586, guid: 7427c09e3b0618d47b95979d1e3196ce, type: 3}
+      propertyPath: ground.m_Bits
+      value: 512
+      objectReference: {fileID: 0}
     - target: {fileID: 7233478590852145201, guid: 7427c09e3b0618d47b95979d1e3196ce, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
