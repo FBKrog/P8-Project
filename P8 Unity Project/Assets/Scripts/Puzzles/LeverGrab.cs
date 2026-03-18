@@ -23,7 +23,7 @@ public enum LeverTechnique { Homer, GoGo, Daom }
 /// so we safely read then override virtual hand positions each frame.
 /// </summary>
 [DefaultExecutionOrder(200)]
-public class LeverGrab : MonoBehaviour
+public class LeverGrab : MonoBehaviour, IRotaryGrabbable
 {
     [Header("Technique References")]
     public HOMERRaycast       homer;

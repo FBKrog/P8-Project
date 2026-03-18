@@ -94,9 +94,9 @@ public class HOMERManipulator : MonoBehaviour
 
         // Move the grabbed object by the same delta (not clamped to hand position).
         // This lets snap zones set the object's position without us overriding it.
-        // LeverGrab manages its own transform — skip it here.
+        // Rotary-grab objects manage their own transform — skip them here.
         if (homer.IsGrabbing && homer.GrabbedObject != null
-            && homer.GrabbedObject.GetComponent<LeverGrab>() == null)
+            && homer.GrabbedObject.GetComponent<IRotaryGrabbable>() == null)
         {
             homer.GrabbedObject.transform.position += scaledDelta;
             homer.GrabbedObject.transform.rotation  = homer.PhysicalHand.rotation * rotationOffset;
