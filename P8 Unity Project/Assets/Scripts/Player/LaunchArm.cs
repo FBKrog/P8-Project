@@ -76,7 +76,7 @@ public class LaunchArm : MonoBehaviour
         interactor.selectEntered.AddListener(OnGrab);
         interactor.selectExited.AddListener(OnRelease);
         
-        launchInput.action.performed += ctx => Launch();
+        launchInput.action.performed += LaunchState;
         
         aimInput.action.performed += AimState;
         aimInput.action.canceled += AimState;
@@ -94,8 +94,8 @@ public class LaunchArm : MonoBehaviour
         interactor.selectEntered.RemoveListener(OnGrab);
         interactor.selectExited.RemoveListener(OnRelease);
 
-        launchInput.action.performed -= ctx => Launch();
-        
+        launchInput.action.performed -= LaunchState;
+
         aimInput.action.performed -= AimState;
         aimInput.action.canceled -= AimState;
         // </Input>
@@ -129,6 +129,14 @@ public class LaunchArm : MonoBehaviour
             return;
         }
         daomInteractable = gameObject;
+    }
+
+    void LaunchState(InputAction.CallbackContext ctx)
+    {
+        if (ctx.ReadValue<float>() >= 0.9f)
+        {
+            Launch();
+        }
     }
 
     /// <summary>
@@ -299,6 +307,7 @@ public class LaunchArm : MonoBehaviour
         lineRenderer.material = valid ? validTarget : invalidTarget;
     }
 
+#if UNITY_EDITOR
     void OnDrawGizmos()
     {
         if(ValidLayer())
@@ -310,4 +319,5 @@ public class LaunchArm : MonoBehaviour
         Gizmos.color = Color.red;
         Gizmos.DrawRay(transform.position, transform.forward * rayLength);
     }
+#endif
 }

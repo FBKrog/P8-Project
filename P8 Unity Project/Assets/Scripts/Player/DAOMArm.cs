@@ -313,9 +313,9 @@ public class DAOMArm : MonoBehaviour
         isAttachedToSurface = true;
         
         if(mirror)
-            targetRot = LookDirection(lookReference.transform.position) * Quaternion.AngleAxis(-90, Vector3.up) * lookReference.transform.rotation;
+            targetRot = LookDirection(lookReference.transform.position) * Quaternion.AngleAxis(-90, Vector3.up);
         else
-            targetRot = LookDirection(lookReference.transform.position) * Quaternion.AngleAxis(90, Vector3.up) * lookReference.transform.rotation;
+            targetRot = LookDirection(lookReference.transform.position) * Quaternion.AngleAxis(-90, Vector3.up);
 
         // If the arm hit an interactable, recall the arm WITH the interactable so the player holds it after recall.
         if (hitInteractable != null && !recalling)
@@ -337,6 +337,9 @@ public class DAOMArm : MonoBehaviour
         StartCoroutine(RotateToTargetRotation(transform, targetRot, rotationDuration));
     }
 
+    /// <summary>
+    /// Calculates the rotation required to face the specified target position from the current transform position.
+    /// </summary>
     Quaternion LookDirection(Vector3 target)
     {
         var direction = (target - transform.position).normalized;
@@ -385,7 +388,7 @@ public class DAOMArm : MonoBehaviour
     void TransformToPlayerHand()
     {
         // Get the position of the player hand relative to the player root, and apply that same relative position to the daom root to find the position for the daom hand.
-        Vector3 playerHandOffset = playerRoot.transform.InverseTransformPoint(playerIKTarget.transform.position);
+        var playerHandOffset = playerRoot.transform.InverseTransformPoint(playerIKTarget.transform.position);
 
         playerHandOffset.x *= -1;
         playerHandOffset.y *= -1;
@@ -418,15 +421,15 @@ public class DAOMArm : MonoBehaviour
     void RotateToPlayerHand()
     {
         // Get the rotation of the player hand relative to the player root, and apply that same relative rotation to the daom root to find the rotation for the daom hand.
-        Quaternion relativeRot = playerIKTarget.transform.rotation * Quaternion.Euler(handRotationOffset); 
+        var relativeRot = Quaternion.Euler(handRotationOffset) * playerIKTarget.transform.rotation;
 
         if(mirror)
-        {
-            relativeRot *= Quaternion.Inverse(playerRoot.transform.rotation) ;
+        { 
+            relativeRot *= Quaternion.Inverse(playerRoot.transform.rotation) * Quaternion.AngleAxis(180, Vector3.right);
         }
         else
         {
-            relativeRot *= playerRoot.transform.rotation * Quaternion.Euler(0,180,-180);
+            relativeRot *= playerRoot.transform.rotation * Quaternion.AngleAxis(0, Vector3.forward) * Quaternion.AngleAxis(180, Vector3.up);
         }
         // Apply the relative rotation to the daom root to find the target rotation for the daom hand.
         daomIKTarget.transform.rotation = daomRoot.transform.rotation * relativeRot;

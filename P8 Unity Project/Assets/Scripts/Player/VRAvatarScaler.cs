@@ -6,8 +6,10 @@ public class VRAvatarScaler : MonoBehaviour
     [SerializeField] Transform avatarHead;
     [SerializeField] Transform leftUpperArm;
     [SerializeField] Transform leftForearm;
+    [SerializeField] Transform leftHand;
     [SerializeField] Transform rightUpperArm;
     [SerializeField] Transform rightForearm;
+    [SerializeField] Transform rightHand;
     [SerializeField] Transform leftThigh;
     [SerializeField] Transform leftShin;
     [SerializeField] Transform rightThigh;
@@ -36,19 +38,24 @@ public class VRAvatarScaler : MonoBehaviour
         // Compute scale factor
         var heightScale = playerHeight / previousHeight;
 
-        // Scale arms proportionally and clamp
+        // Scale arms proportionally and clamp for reach
         var armScale = Mathf.Clamp(heightScale, minArmScale, maxArmScale);
         leftUpperArm.localScale = AdjustScale(armScale);
         leftForearm.localScale = AdjustScale(armScale);
         rightUpperArm.localScale = AdjustScale(armScale);
         rightForearm.localScale = AdjustScale(armScale);
 
-        // Scale legs proportionally and clamp
+        // Scale legs proportionally and clamp for height
         var legScale = Mathf.Clamp(heightScale, minLegScale, maxLegScale);
         leftThigh.localScale = AdjustScale(legScale);
         leftShin.localScale = AdjustScale(legScale);
         rightThigh.localScale = AdjustScale(legScale);
         rightShin.localScale = AdjustScale(legScale);
+
+        // Scale hands to compensate for arm scaling
+        var handScale = Mathf.Abs(Mathf.Abs(1 - armScale) - 1);
+        leftHand.localScale = AdjustScale(handScale);
+        rightHand.localScale = AdjustScale(handScale);
     }
 
     Vector3 AdjustScale(float scale)

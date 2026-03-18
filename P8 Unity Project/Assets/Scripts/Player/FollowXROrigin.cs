@@ -4,7 +4,10 @@ public class FollowXROrigin : MonoBehaviour
 {
     [Header("Head-Body Offset")]
     [SerializeField] Vector3 headBodyPositionOffset;
-    //[SerializeField] float turnSmoothness = 5f;
+
+    [Header("Body Rotation")]
+    [SerializeField] bool rotateWithHead = true;
+    [SerializeField] float turnSmoothness = 5f;
 
     //[Header("Torso Rotation")]
     //[SerializeField] float torsoRotationSpeed = 5f;
@@ -19,6 +22,7 @@ public class FollowXROrigin : MonoBehaviour
     void LateUpdate()
     {
         ApplyHeadBodyOffset();
+        RotateBodyWithHead();
         //RotateTorsoTowardsHands();
         Mapping();
     }
@@ -27,10 +31,6 @@ public class FollowXROrigin : MonoBehaviour
     {
         var targetPosition = head.ikTarget.position + headBodyPositionOffset;
         transform.position = targetPosition;
-
-        //var newY = head.ikTarget.eulerAngles.y;
-        //var targetRotation = Quaternion.Euler(transform.eulerAngles.x, newY, transform.eulerAngles.z);
-        //transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, turnSmoothness);
     }
 
     void Mapping()
@@ -41,6 +41,13 @@ public class FollowXROrigin : MonoBehaviour
 
         // Spine should only rotate, not move
         //spine.Map(false);
+    }
+
+    void RotateBodyWithHead()
+    {
+        var newY = head.ikTarget.eulerAngles.y;
+        var targetRotation = Quaternion.Euler(transform.eulerAngles.x, newY, transform.eulerAngles.z);
+        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, turnSmoothness);
     }
 
     /// <summary>
