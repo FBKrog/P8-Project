@@ -1897,7 +1897,7 @@ MonoBehaviour:
   m_Name: Intro Cutscene
   m_EditorClassIdentifier: Unity.Recorder.Editor::UnityEditor.Recorder.MovieRecorderSettings
   enabled: 1
-  take: 1
+  take: 2
   captureEveryNthFrame: 1
   fileNameGenerator:
     m_Path:
@@ -2124,7 +2124,7 @@ MonoBehaviour:
   m_Version: 3
   m_AnimClip: {fileID: 0}
   m_Locked: 0
-  m_Muted: 0
+  m_Muted: 1
   m_CustomPlayableFullTypename: 
   m_Curves: {fileID: 0}
   m_Parent: {fileID: 11400000}
@@ -2579,6 +2579,84 @@ AnimationClip:
     classID: 1
     script: {fileID: 0}
     flags: 0
+  - serializedVersion: 2
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: Infinity
+        tangentMode: 97
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 27.516666
+        value: 0.38
+        inSlope: 0.027042253
+        outSlope: 0.027042253
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 29.583334
+        value: 0.8
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    attribute: bloodAmount
+    path: Door Part/Doorway 2
+    classID: 114
+    script: {fileID: 11500000, guid: 3c4e4c0a53c2f174d929ca724370721b, type: 3}
+    flags: 0
+  - serializedVersion: 2
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 23.233334
+        value: 1
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 29.583334
+        value: 0
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    attribute: updateBlood
+    path: Door Part/Doorway 2
+    classID: 114
+    script: {fileID: 11500000, guid: 3c4e4c0a53c2f174d929ca724370721b, type: 3}
+    flags: 0
   m_PPtrCurves:
   - serializedVersion: 2
     curve:
@@ -2588,35 +2666,6 @@ AnimationClip:
       value: {fileID: 2100000, guid: 743c17176807ca1458ef824b323ae056, type: 2}
     attribute: 'm_Materials.Array.data[0]'
     path: Temp SkyboxReplacer
-    classID: 23
-    script: {fileID: 0}
-    flags: 2
-  - serializedVersion: 2
-    curve:
-    - time: 0
-      value: {fileID: 2100000, guid: 6fdac3ffbb8694b4bb70e6ce676518d5, type: 2}
-    - time: 28.833334
-      value: {fileID: 2100000, guid: 57741125cb2433944a123693e33c853b, type: 2}
-    - time: 28.95
-      value: {fileID: 2100000, guid: 6fdac3ffbb8694b4bb70e6ce676518d5, type: 2}
-    - time: 29.066668
-      value: {fileID: 2100000, guid: 57741125cb2433944a123693e33c853b, type: 2}
-    - time: 29.183332
-      value: {fileID: 2100000, guid: 6fdac3ffbb8694b4bb70e6ce676518d5, type: 2}
-    - time: 29.25
-      value: {fileID: 2100000, guid: 57741125cb2433944a123693e33c853b, type: 2}
-    - time: 29.316668
-      value: {fileID: 2100000, guid: 6fdac3ffbb8694b4bb70e6ce676518d5, type: 2}
-    - time: 29.366667
-      value: {fileID: 2100000, guid: 57741125cb2433944a123693e33c853b, type: 2}
-    - time: 29.416666
-      value: {fileID: 2100000, guid: 6fdac3ffbb8694b4bb70e6ce676518d5, type: 2}
-    - time: 29.466667
-      value: {fileID: 2100000, guid: 57741125cb2433944a123693e33c853b, type: 2}
-    - time: 29.5
-      value: {fileID: 2100000, guid: 6fdac3ffbb8694b4bb70e6ce676518d5, type: 2}
-    attribute: 'm_Materials.Array.data[0]'
-    path: Door Part/Doorway 2/Cylinder
     classID: 23
     script: {fileID: 0}
     flags: 2
@@ -2745,16 +2794,25 @@ AnimationClip:
       isIntCurve: 0
       isSerializeReferenceCurve: 0
     - serializedVersion: 2
-      path: 3331885069
-      attribute: 0
-      script: {fileID: 0}
-      typeID: 23
-      customType: 21
-      isPPtrCurve: 1
+      path: 3115375677
+      attribute: 1707293352
+      script: {fileID: 11500000, guid: 3c4e4c0a53c2f174d929ca724370721b, type: 3}
+      typeID: 114
+      customType: 0
+      isPPtrCurve: 0
       isIntCurve: 0
       isSerializeReferenceCurve: 0
     - serializedVersion: 2
-      path: 795735746
+      path: 3115375677
+      attribute: 4154051903
+      script: {fileID: 11500000, guid: 3c4e4c0a53c2f174d929ca724370721b, type: 3}
+      typeID: 114
+      customType: 0
+      isPPtrCurve: 0
+      isIntCurve: 0
+      isSerializeReferenceCurve: 0
+    - serializedVersion: 2
+      path: 3331885069
       attribute: 0
       script: {fileID: 0}
       typeID: 23
@@ -2765,17 +2823,6 @@ AnimationClip:
     pptrCurveMapping:
     - {fileID: 2100000, guid: c919bda185fa8ca4b90fdbaa365ea976, type: 2}
     - {fileID: 2100000, guid: 743c17176807ca1458ef824b323ae056, type: 2}
-    - {fileID: 2100000, guid: 6fdac3ffbb8694b4bb70e6ce676518d5, type: 2}
-    - {fileID: 2100000, guid: 57741125cb2433944a123693e33c853b, type: 2}
-    - {fileID: 2100000, guid: 6fdac3ffbb8694b4bb70e6ce676518d5, type: 2}
-    - {fileID: 2100000, guid: 57741125cb2433944a123693e33c853b, type: 2}
-    - {fileID: 2100000, guid: 6fdac3ffbb8694b4bb70e6ce676518d5, type: 2}
-    - {fileID: 2100000, guid: 57741125cb2433944a123693e33c853b, type: 2}
-    - {fileID: 2100000, guid: 6fdac3ffbb8694b4bb70e6ce676518d5, type: 2}
-    - {fileID: 2100000, guid: 57741125cb2433944a123693e33c853b, type: 2}
-    - {fileID: 2100000, guid: 6fdac3ffbb8694b4bb70e6ce676518d5, type: 2}
-    - {fileID: 2100000, guid: 57741125cb2433944a123693e33c853b, type: 2}
-    - {fileID: 2100000, guid: 6fdac3ffbb8694b4bb70e6ce676518d5, type: 2}
   m_AnimationClipSettings:
     serializedVersion: 2
     m_AdditiveReferencePoseClip: {fileID: 0}
@@ -3435,6 +3482,84 @@ AnimationClip:
     path: FI Arm Mandala Bursts
     classID: 1
     script: {fileID: 0}
+    flags: 0
+  - serializedVersion: 2
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: Infinity
+        tangentMode: 97
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 27.516666
+        value: 0.38
+        inSlope: 0.027042253
+        outSlope: 0.027042253
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 29.583334
+        value: 0.8
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    attribute: bloodAmount
+    path: Door Part/Doorway 2
+    classID: 114
+    script: {fileID: 11500000, guid: 3c4e4c0a53c2f174d929ca724370721b, type: 3}
+    flags: 0
+  - serializedVersion: 2
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 23.233334
+        value: 1
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 29.583334
+        value: 0
+        inSlope: Infinity
+        outSlope: Infinity
+        tangentMode: 103
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    attribute: updateBlood
+    path: Door Part/Doorway 2
+    classID: 114
+    script: {fileID: 11500000, guid: 3c4e4c0a53c2f174d929ca724370721b, type: 3}
     flags: 0
   m_EulerEditorCurves:
   - serializedVersion: 2

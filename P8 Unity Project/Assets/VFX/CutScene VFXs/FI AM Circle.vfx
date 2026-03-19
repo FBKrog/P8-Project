@@ -103,12 +103,6 @@ MonoBehaviour:
     - model: {fileID: 8926484042661614545}
       id: 0
       isStickyNote: 0
-    - model: {fileID: 8926484042661614563}
-      id: 0
-      isStickyNote: 0
-    - model: {fileID: 8926484042661614707}
-      id: 0
-      isStickyNote: 0
   stickyNoteInfos: []
   categories:
   - name: Spawn
@@ -4253,7 +4247,7 @@ MonoBehaviour:
   - {fileID: 8926484042661614694}
   m_ExposedName: Velocity Growth
   m_Exposed: 1
-  m_Order: 0
+  m_Order: 4
   m_Category: Speed and Rotation Change
   m_Min:
     m_Type:
@@ -5547,7 +5541,7 @@ MonoBehaviour:
   - {fileID: 8926484042661614748}
   m_ExposedName: Door Rotation
   m_Exposed: 0
-  m_Order: 2
+  m_Order: 5
   m_Category: Speed and Rotation Change
   m_Min:
     m_Type:
@@ -6144,7 +6138,7 @@ MonoBehaviour:
   - {fileID: 8926484042661614766}
   m_ExposedName: Rotation Change
   m_Exposed: 1
-  m_Order: 1
+  m_Order: 6
   m_Category: Speed and Rotation Change
   m_Min:
     m_Type:
