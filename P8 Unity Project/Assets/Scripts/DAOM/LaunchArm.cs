@@ -1,4 +1,5 @@
 using System;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
@@ -47,6 +48,9 @@ public class LaunchArm : MonoBehaviour
 
     public static Action<XRDirectInteractor> SetInteractorHandedness;
     public static void OnSetInteractorHandedness(XRDirectInteractor interactor) => SetInteractorHandedness?.Invoke(interactor);
+
+    public static Action ArmLaunched;
+    public static void OnArmLaunched() => ArmLaunched?.Invoke();
 
     public static Action ArmRecalled;
     public static void OnArmRecalled() => ArmRecalled?.Invoke();
@@ -204,7 +208,7 @@ public class LaunchArm : MonoBehaviour
 
         foreach (var h in hits)
         {
-            if (selectedInteractable != null && !h.collider.transform.IsChildOf(selectedInteractable.transform) && 
+            if (selectedInteractable != null && !h.collider.transform.IsChildOf(selectedInteractable.transform) &&
                 h.collider.transform.parent.TryGetComponent(out XRGrabInteractable hitInteractable))
                 return false;
 
@@ -256,6 +260,7 @@ public class LaunchArm : MonoBehaviour
             daomArm.GetComponent<DAOMArm>().Initialize(armRoot, armIKTarget, hit.point, camera, this.hitInteractable, selectedInteractable);
             OnSetInteractorHandedness(interactor);
             interactor.enabled = false;
+            OnArmLaunched();
         }
     }
 

@@ -811,37 +811,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2702080016728948917}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1199267654114884586
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 3764334031001456476}
-  m_Layer: 2
-  m_Name: XR Spine Target
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &3764334031001456476
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1199267654114884586}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.0009999851, y: 1.0446006, z: -0.08785534}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 7894787451411234291}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1215976550602867049
 GameObject:
   m_ObjectHideFlags: 0
@@ -1079,7 +1048,6 @@ Transform:
   - {fileID: 25565765604621587}
   - {fileID: 5673137328955573496}
   - {fileID: 6173824029232012307}
-  - {fileID: 3165137807971114288}
   - {fileID: 7468540159051212027}
   - {fileID: 6299325721897690565}
   m_Father: {fileID: 7428838195261458254}
@@ -1599,7 +1567,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5827547174392513482}
-  - {fileID: 3764334031001456476}
   m_Father: {fileID: 7233478590852145201}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!114 &8075980487972199482
@@ -1617,8 +1584,8 @@ MonoBehaviour:
   m_Camera: {fileID: 6946891341548589887}
   m_OriginBaseGameObject: {fileID: 2064848434724701100}
   m_CameraFloorOffsetObject: {fileID: 9047357267681398846}
-  m_RequestedTrackingOriginMode: 2
-  m_CameraYOffset: 1.36144
+  m_RequestedTrackingOriginMode: 1
+  m_CameraYOffset: 1.8
 --- !u!143 &3807369627401941388
 CharacterController:
   m_ObjectHideFlags: 0
@@ -1637,13 +1604,13 @@ CharacterController:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Height: 1.36144
+  m_Height: 1.8
   m_Radius: 0.1
   m_SlopeLimit: 45
   m_StepOffset: 0.5
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0.76072, z: 0}
+  m_Center: {x: 0, y: 0.9, z: 0}
 --- !u!114 &1455309032471950634
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2372,7 +2339,7 @@ MonoBehaviour:
   daomArmPrefab: {fileID: 1114692282621708169, guid: 5036f59f19ad537498e9905b9b05e033, type: 3}
   launchPoint: {fileID: 198400841847164632}
   interactor: {fileID: 6147463475287948901}
-  launchInput: {fileID: 83097790271614945, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+  launchInput: {fileID: 7904272356298805229, guid: c348712bda248c246b8c49b3db54643f, type: 3}
   aimInput: {fileID: 7904272356298805229, guid: c348712bda248c246b8c49b3db54643f, type: 3}
   aiming: 0
   canLaunch: 1
@@ -2624,6 +2591,7 @@ GameObject:
   - component: {fileID: 5925144495933936426}
   - component: {fileID: 7524427872448198852}
   - component: {fileID: 6860443578747232586}
+  - component: {fileID: 8324680474947775570}
   m_Layer: 0
   m_Name: KyleRobotVR
   m_TagString: Untagged
@@ -2661,7 +2629,7 @@ Animator:
   m_Controller: {fileID: 0}
   m_CullingMode: 2
   m_UpdateMode: 0
-  m_ApplyRootMotion: 1
+  m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
@@ -2769,11 +2737,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   headBodyPositionOffset: {x: 0, y: -0.56, z: 0}
+  turnSmoothness: 0.03
+  headInfluence: 0.4
+  torsoRotationSpeed: 5
+  torsoRotationMaxAngle: 60
   head:
     xrTarget: {fileID: 3906718937082550945}
     ikTarget: {fileID: 5316965034995177833}
     positionOffset: {x: 0, y: 0, z: 0}
     rotationOffset: {x: 0, y: 0, z: -90}
+  spine:
+    xrTarget: {fileID: 0}
+    ikTarget: {fileID: 0}
+    positionOffset: {x: 0, y: 0, z: 0}
+    rotationOffset: {x: 0, y: 0, z: 0}
   leftHand:
     xrTarget: {fileID: 8585363450280597894}
     ikTarget: {fileID: 8992056258147564969}
@@ -2833,8 +2810,30 @@ MonoBehaviour:
   - {fileID: 8810124985772119103}
   ground:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 512
   groundOffset: 0.1
+--- !u!114 &8324680474947775570
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4550548623185534749}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5781ef5a049622247a77edfc2cbf56c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StretchArms
+  leftUpperArm: {fileID: 594213701503387101}
+  leftLowerArm: {fileID: 9052267112556627966}
+  leftTip: {fileID: 7110895660806262321}
+  leftIKTarget: {fileID: 8992056258147564969}
+  rightUpperArm: {fileID: 5060337180227593771}
+  rightLowerArm: {fileID: 4372487889463120017}
+  rightTip: {fileID: 5963728846139349016}
+  rightIKTarget: {fileID: 6061877384840537952}
+  armStretchWeight: 0.5
+  stretchAmount: 0.5
 --- !u!1 &4691808131789018776
 GameObject:
   m_ObjectHideFlags: 0
@@ -3879,37 +3878,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 6116979387763588353}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &6879488345482994609
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 4451853607468029580}
-  m_Layer: 0
-  m_Name: Spine Target
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &4451853607468029580
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6879488345482994609}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0.7071068, w: 0.7071068}
-  m_LocalPosition: {x: -0.0009999851, y: 0, z: 0.031144619}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 3165137807971114288}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7068686253206827321
 GameObject:
   m_ObjectHideFlags: 0
@@ -4355,90 +4323,6 @@ Transform:
   - {fileID: 826693637618621309}
   m_Father: {fileID: 5963728846139349016}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &8320716095322572136
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 3165137807971114288}
-  - component: {fileID: 3350080070352488497}
-  m_Layer: 0
-  m_Name: Spine IK
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &3165137807971114288
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8320716095322572136}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 4451853607468029580}
-  m_Father: {fileID: 4293967461585791918}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3350080070352488497
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8320716095322572136}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8935e03361a14ec4b8edc872f76bc822, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.MultiParentConstraint
-  m_Weight: 1
-  m_Data:
-    m_ConstrainedObject: {fileID: 120534797781803751}
-    m_SourceObjects:
-      m_Length: 1
-      m_Item0:
-        transform: {fileID: 4451853607468029580}
-        weight: 1
-      m_Item1:
-        transform: {fileID: 0}
-        weight: 0
-      m_Item2:
-        transform: {fileID: 0}
-        weight: 0
-      m_Item3:
-        transform: {fileID: 0}
-        weight: 0
-      m_Item4:
-        transform: {fileID: 0}
-        weight: 0
-      m_Item5:
-        transform: {fileID: 0}
-        weight: 0
-      m_Item6:
-        transform: {fileID: 0}
-        weight: 0
-      m_Item7:
-        transform: {fileID: 0}
-        weight: 0
-    m_ConstrainedPositionAxes:
-      x: 1
-      y: 1
-      z: 1
-    m_ConstrainedRotationAxes:
-      x: 1
-      y: 1
-      z: 1
-    m_MaintainPositionOffset: 0
-    m_MaintainRotationOffset: 0
 --- !u!1 &8645876205345119729
 GameObject:
   m_ObjectHideFlags: 0

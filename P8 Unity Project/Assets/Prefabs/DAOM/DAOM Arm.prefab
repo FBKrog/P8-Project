@@ -376,7 +376,7 @@ MonoBehaviour:
   retractionTime: 0.4
   rotationStartTime: 0.8
   rotationDuration: 0.2
-  handRotationOffset: {x: 0, y: 0, z: 90}
+  handRotationOffset: {x: 0, y: 0, z: 0}
   mirror: 0
   littleExtraBit: {fileID: 132302967242953927}
   wallDistanceOffset: 0.3

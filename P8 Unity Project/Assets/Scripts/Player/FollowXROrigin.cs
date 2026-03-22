@@ -6,24 +6,23 @@ public class FollowXROrigin : MonoBehaviour
     [SerializeField] Vector3 headBodyPositionOffset;
 
     [Header("Body Rotation")]
-    [SerializeField] bool rotateWithHead = true;
-    [SerializeField] float turnSmoothness = 5f;
+    [SerializeField] float turnSmoothness = 0.03f;
+    [SerializeField] [Tooltip("How much the head influences the body rotation. 0 is no influence, 1 is max.")] [Range(0,1)] float headInfluence = 0.4f;
 
-    //[Header("Torso Rotation")]
-    //[SerializeField] float torsoRotationSpeed = 5f;
-    //[SerializeField] float torsoRotationMaxAngle = 60f;
+    [Header("Torso Rotation")]
+    [SerializeField] float torsoRotationSpeed = 5f;
+    [SerializeField] float torsoRotationMaxAngle = 60f;
 
     [Header("Mapping")]
     [SerializeField] VRMap head;
-    //[SerializeField] VRMap spine;
+    [SerializeField] VRMap spine;
     [SerializeField] VRMap leftHand;
     [SerializeField] VRMap rightHand;
 
     void LateUpdate()
     {
         ApplyHeadBodyOffset();
-        RotateBodyWithHead();
-        //RotateTorsoTowardsHands();
+        RotateSpineTowardsHands();
         Mapping();
     }
 
@@ -38,52 +37,59 @@ public class FollowXROrigin : MonoBehaviour
         head.Map();
         leftHand.Map();
         rightHand.Map();
-
-        // Spine should only rotate, not move
-        //spine.Map(false);
-    }
-
-    void RotateBodyWithHead()
-    {
-        var newY = head.ikTarget.eulerAngles.y;
-        var targetRotation = Quaternion.Euler(transform.eulerAngles.x, newY, transform.eulerAngles.z);
-        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, turnSmoothness);
     }
 
     /// <summary>
-    /// Rotates the avatar's torso horizontally to face the midpoint between the left and right hands, within a
-    /// specified angular limit.
+    /// Rotates the body to face a direction blended between the midpoint of the hands and the head's forward direction.
     /// </summary>
-    //void RotateTorsoTowardsHands()
-    //{
-    //    // Compute midpoint between left and right hand positions
-    //    var leftPos = leftHand.xrTarget.position;
-    //    var rightPos = rightHand.xrTarget.position;
-    //    var handMidpoint = (leftPos + rightPos) * 0.5f;
+    void RotateSpineTowardsHands()
+    {
+        // Get positions
+        var leftPos = leftHand.ikTarget.position;
+        var rightPos = rightHand.ikTarget.position;
 
-    //    // Direction from avatar root to the hand midpoint (ignore vertical)
-    //    var torsoDir = handMidpoint - spine.xrTarget.position;
-    //    torsoDir.y = 0f;
+        // Midpoint of hands
+        var handMid = (leftPos + rightPos) * 0.5f;
 
-    //    // Avoid division by zero
-    //    if (torsoDir.sqrMagnitude < 0.001f)
-    //        return;
+        // Directions (flattened)
+        var directionToHands = handMid - transform.position;
+        var headForward = head.ikTarget.forward;
 
-    //    torsoDir.Normalize();
+        directionToHands.y = 0f;
+        headForward.y = 0f;
 
-    //    // Calculate angle between head forward and torso direction
-    //    float angle = Vector3.SignedAngle(spine.xrTarget.forward, torsoDir, Vector3.up);
+        if (directionToHands.sqrMagnitude < 0.001f)
+            return;
 
-    //    // Clamp angle to prevent unnatural twisting
-    //    angle = Mathf.Clamp(angle, -torsoRotationMaxAngle, torsoRotationMaxAngle);
+        directionToHands.Normalize();
+        headForward.Normalize();
 
-    //    // Compute final target rotation: head forward + clamped twist
-    //    Quaternion targetRotation = Quaternion.AngleAxis(angle, Vector3.up) * Quaternion.LookRotation(spine.xrTarget.forward, Vector3.up);
+        // Clamp the angle between head forward and hands direction to prevent unnatural twisting
+        var angleDifference = Vector3.Angle(headForward, directionToHands);
+        Vector3 clampedDir;
+        if(angleDifference > torsoRotationMaxAngle)
+        {
+            clampedDir = Vector3.RotateTowards(headForward, directionToHands, Mathf.Deg2Rad * torsoRotationMaxAngle, 0f);
+        }
+         else
+        {
+            clampedDir = directionToHands;
+        }
 
-    //    // Smoothly rotate the avatar root toward target rotation
-    //    spine.xrTarget.rotation = Quaternion.Slerp(spine.xrTarget.rotation, targetRotation, torsoRotationSpeed * Time.deltaTime
-    //    );
-    //}
+        // Blend between clamped hand direction and head forward based on head influence
+        var blendedDir = Vector3.Slerp(clampedDir, headForward, headInfluence);
+
+        // Safety check to prevent NaNs
+        if (blendedDir.sqrMagnitude < 0.001f)
+            return;
+
+        blendedDir.Normalize();
+
+        var targetRotation = Quaternion.LookRotation(blendedDir, Vector3.up);
+
+        // Smoothly lerp to the target rotation
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, torsoRotationSpeed * Time.deltaTime);
+    }
 }
 
 /// <summary>

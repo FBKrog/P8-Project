@@ -1,12 +1,5 @@
 fileFormatVersion: 2
-guid: 73ffbc06802a247cfb1b26f4ee67eba8
-AssetOrigin:
-  serializedVersion: 1
-  productId: 4696
-  packageName: Robot Kyle | URP
-  packageVersion: 4.0
-  assetPath: Assets/UnityTechnologies/SpaceRobotKyle/Models/KyleRobot.fbx
-  uploadId: 847474
+guid: 78051ec11a033f24980d9df6b6f08e9e
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []

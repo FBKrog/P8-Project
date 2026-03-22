@@ -34,7 +34,6 @@ public class DAOMArm : MonoBehaviour
     [Header("Rotation")]
     [SerializeField] [Tooltip("The point in travel time the arm will rotate, normalized from percentage of traveled distance")] [Range(0,1)] float rotationStartTime = 0.8f;
     [SerializeField] [Tooltip("The time it takes the arm to rotate into place relative to the surface's normal.")] float rotationDuration = 0.5f;
-    [SerializeField] Vector3 handRotationOffset = new(0, 0,90);
 
     [Header("Other")]
     [SerializeField] [Tooltip("Make the arm act as if mirrored.")] bool mirror = true;
@@ -233,7 +232,6 @@ public class DAOMArm : MonoBehaviour
                 }
                 if (!mirror && traveledDistance >= (totalDistance - wallDistanceOffset))
                 {
-                    print("Some cool extra thing that shoots out to the wall");
                     littleExtraBit.SetActive(true);
                     ArmAttaching();
                     break;
@@ -421,7 +419,7 @@ public class DAOMArm : MonoBehaviour
     void RotateToPlayerHand()
     {
         // Get the rotation of the player hand relative to the player root, and apply that same relative rotation to the daom root to find the rotation for the daom hand.
-        var relativeRot = Quaternion.Euler(handRotationOffset) * playerIKTarget.transform.rotation;
+        var relativeRot = playerIKTarget.transform.rotation;
 
         if(mirror)
         { 
@@ -429,7 +427,7 @@ public class DAOMArm : MonoBehaviour
         }
         else
         {
-            relativeRot *= playerRoot.transform.rotation * Quaternion.AngleAxis(0, Vector3.forward) * Quaternion.AngleAxis(180, Vector3.up);
+            relativeRot *= playerRoot.transform.rotation * Quaternion.AngleAxis(-180, Vector3.up) * Quaternion.AngleAxis(-90, Vector3.forward);
         }
         // Apply the relative rotation to the daom root to find the target rotation for the daom hand.
         daomIKTarget.transform.rotation = daomRoot.transform.rotation * relativeRot;
