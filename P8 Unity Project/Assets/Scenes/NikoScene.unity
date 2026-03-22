@@ -5324,22 +5324,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: KylePlayer
       objectReference: {fileID: 0}
-    - target: {fileID: 3807369627401941388, guid: 7427c09e3b0618d47b95979d1e3196ce, type: 3}
-      propertyPath: m_Height
-      value: 1.8
-      objectReference: {fileID: 0}
-    - target: {fileID: 3807369627401941388, guid: 7427c09e3b0618d47b95979d1e3196ce, type: 3}
-      propertyPath: m_Center.y
-      value: 0.9
-      objectReference: {fileID: 0}
-    - target: {fileID: 5925144495933936426, guid: 7427c09e3b0618d47b95979d1e3196ce, type: 3}
-      propertyPath: spine.ikTarget
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 5925144495933936426, guid: 7427c09e3b0618d47b95979d1e3196ce, type: 3}
-      propertyPath: spine.xrTarget
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 6147463475287948901, guid: 7427c09e3b0618d47b95979d1e3196ce, type: 3}
       propertyPath: m_InteractionManager
       value: 
@@ -5383,10 +5367,6 @@ PrefabInstance:
     - target: {fileID: 7233478590852145201, guid: 7427c09e3b0618d47b95979d1e3196ce, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8075980487972199482, guid: 7427c09e3b0618d47b95979d1e3196ce, type: 3}
-      propertyPath: m_CameraYOffset
-      value: 1.8
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
