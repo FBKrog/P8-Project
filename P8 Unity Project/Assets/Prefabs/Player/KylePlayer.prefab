@@ -2824,14 +2824,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5781ef5a049622247a77edfc2cbf56c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StretchArms
-  leftUpperArm: {fileID: 594213701503387101}
-  leftLowerArm: {fileID: 9052267112556627966}
-  leftTip: {fileID: 7110895660806262321}
-  leftIKTarget: {fileID: 8992056258147564969}
-  rightUpperArm: {fileID: 5060337180227593771}
-  rightLowerArm: {fileID: 4372487889463120017}
-  rightTip: {fileID: 5963728846139349016}
-  rightIKTarget: {fileID: 6061877384840537952}
+  daomArm: 0
+  arms:
+  - upperArm: {fileID: 594213701503387101}
+    lowerArm: {fileID: 9052267112556627966}
+    tip: {fileID: 7110895660806262321}
+    ikTarget: {fileID: 8992056258147564969}
+  - upperArm: {fileID: 5060337180227593771}
+    lowerArm: {fileID: 4372487889463120017}
+    tip: {fileID: 5963728846139349016}
+    ikTarget: {fileID: 6061877384840537952}
   armStretchWeight: 0.5
   stretchAmount: 0.5
 --- !u!1 &4691808131789018776

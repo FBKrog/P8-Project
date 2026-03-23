@@ -325,6 +325,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4476448574186069263}
   - component: {fileID: 1655372739361794311}
+  - component: {fileID: 593800909442582437}
   m_Layer: 0
   m_Name: DAOM Arm
   m_TagString: Untagged
@@ -376,13 +377,32 @@ MonoBehaviour:
   retractionTime: 0.4
   rotationStartTime: 0.8
   rotationDuration: 0.2
-  handRotationOffset: {x: 0, y: 0, z: 0}
   mirror: 0
   littleExtraBit: {fileID: 132302967242953927}
   wallDistanceOffset: 0.3
   interactor: {fileID: 3938603872344463756}
   isTraveling: 0
   isAttachedToSurface: 0
+--- !u!114 &593800909442582437
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1114692282621708169}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5781ef5a049622247a77edfc2cbf56c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StretchArms
+  daomArm: 1
+  arms:
+  - upperArm: {fileID: 2712303099109883064}
+    lowerArm: {fileID: 2238063664130369152}
+    tip: {fileID: 8490718710929178189}
+    ikTarget: {fileID: 8217224099838130431}
+  armStretchWeight: 0.5
+  stretchAmount: 0.5
 --- !u!1 &1413934980573499871
 GameObject:
   m_ObjectHideFlags: 0
