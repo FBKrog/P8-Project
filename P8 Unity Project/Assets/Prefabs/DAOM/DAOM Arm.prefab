@@ -326,6 +326,7 @@ GameObject:
   - component: {fileID: 4476448574186069263}
   - component: {fileID: 1655372739361794311}
   - component: {fileID: 593800909442582437}
+  - component: {fileID: 4571226293692559386}
   m_Layer: 0
   m_Name: DAOM Arm
   m_TagString: Untagged
@@ -403,6 +404,34 @@ MonoBehaviour:
     ikTarget: {fileID: 8217224099838130431}
   armStretchWeight: 0.5
   stretchAmount: 0.5
+--- !u!114 &4571226293692559386
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1114692282621708169}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50a8f01b300ac0248bfe77895cc1ebfb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DynamicHandAnimation
+  handData:
+    thumb:
+      joints: []
+      jointValues: []
+    index:
+      joints: []
+      jointValues: []
+    middle:
+      joints: []
+      jointValues: []
+    ring:
+      joints: []
+      jointValues: []
+    pinky:
+      joints: []
+      jointValues: []
 --- !u!1 &1413934980573499871
 GameObject:
   m_ObjectHideFlags: 0
@@ -660,6 +689,7 @@ GameObject:
   - component: {fileID: 2383638542278656903}
   - component: {fileID: 2385475252469054136}
   - component: {fileID: 3938603872344463756}
+  - component: {fileID: 6747225278891821015}
   m_Layer: 0
   m_Name: Interactor
   m_TagString: Untagged
@@ -843,6 +873,62 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   m_PhysicsTriggerInteraction: 1
+--- !u!114 &6747225278891821015
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2544923124343288057}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50a8f01b300ac0248bfe77895cc1ebfb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DynamicHandAnimation
+  handData:
+    thumb:
+      joints:
+      - {fileID: 5820002956484769430}
+      - {fileID: 7932096189802337113}
+      jointValues:
+      - 0
+      - 0
+    index:
+      joints:
+      - {fileID: 7535575411010579803}
+      - {fileID: 973002423775382078}
+      - {fileID: 8142193734531132812}
+      jointValues:
+      - 0
+      - 0
+      - 0
+    middle:
+      joints:
+      - {fileID: 1108331269314120264}
+      - {fileID: 3876638631013010434}
+      - {fileID: 3449960226971963083}
+      jointValues:
+      - 0
+      - 0
+      - 0
+    ring:
+      joints:
+      - {fileID: 5522505933423144140}
+      - {fileID: 8756916963939878847}
+      - {fileID: 2225667906916428498}
+      jointValues:
+      - 0
+      - 0
+      - 0
+    pinky:
+      joints:
+      - {fileID: 6395450547359555941}
+      - {fileID: 2211476875953610011}
+      - {fileID: 1377708300043238659}
+      jointValues:
+      - 0
+      - 0
+      - 0
 --- !u!1 &2554957837742694842
 GameObject:
   m_ObjectHideFlags: 0
