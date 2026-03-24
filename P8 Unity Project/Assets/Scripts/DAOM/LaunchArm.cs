@@ -1,5 +1,4 @@
 using System;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
@@ -40,6 +39,7 @@ public class LaunchArm : MonoBehaviour
     [Header("Line Renderer")]
     [SerializeField] Material validTarget;
     [SerializeField] Material invalidTarget;
+    [SerializeField] GameObject holoArm;
     LineRenderer lineRenderer;
 
     IXRSelectInteractable selectedInteractable;
@@ -64,7 +64,8 @@ public class LaunchArm : MonoBehaviour
     void Awake()
     {
         lineRenderer = GetComponent<LineRenderer>();
-        if(camera == null)
+        holoArm.SetActive(false);
+        if (camera == null)
         {
             camera = Camera.main.gameObject;
         }
@@ -195,6 +196,7 @@ public class LaunchArm : MonoBehaviour
     {
         DrawLineRenderer();
         SetLineMaterial(ValidLayer());
+        SetHolographicArm(ValidLayer());
     }
 
     /// <summary>
@@ -310,6 +312,13 @@ public class LaunchArm : MonoBehaviour
         if(valid == lasttValid) return;
         lasttValid = valid;
         lineRenderer.material = valid ? validTarget : invalidTarget;
+    }
+
+    void SetHolographicArm(bool valid)
+    {
+        holoArm.SetActive(valid);
+        holoArm.transform.position = hit.point;
+        holoArm.transform.rotation = Quaternion.LookRotation(hit.normal);
     }
 
 #if UNITY_EDITOR
