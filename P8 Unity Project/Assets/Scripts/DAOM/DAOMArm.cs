@@ -34,6 +34,7 @@ public class DAOMArm : MonoBehaviour
     [Header("Rotation")]
     [SerializeField] [Tooltip("The point in travel time the arm will rotate, normalized from percentage of traveled distance")] [Range(0,1)] float rotationStartTime = 0.8f;
     [SerializeField] [Tooltip("The time it takes the arm to rotate into place relative to the surface's normal.")] float rotationDuration = 0.5f;
+    [SerializeField] Vector3 handRotationOffset = new(180,0,90);
 
     [Header("Other")]
     [SerializeField] [Tooltip("Make the arm act as if mirrored.")] bool mirror = true;
@@ -131,15 +132,16 @@ public class DAOMArm : MonoBehaviour
         lowerArmStartRot = lowerArm.transform.localRotation;
         tipStartRot = tip.transform.localRotation;
 
-        if (interactor != null && interactable != null)
+        if (interactor != null && interactable != null) // If we already hold an interactable, keep holding it.
         {
             selectedInteractable = interactable;
             interactor.interactionManager.SelectEnter(interactor, selectedInteractable);
             interactor.selectActionTrigger = XRBaseInputInteractor.InputTriggerType.Sticky;
         }
-        if(hitInteractable != null)
+        if(hitInteractable != null) // If the arm hit is an interactable, store it so we can recall the arm holding the interactable after hitting it.
         {
             this.hitInteractable = hitInteractable;
+            rotationStartTime = 1; // Don't start rotating until the object is grabbed.
         }
         StartCoroutine(TravelToPoint(transform, point));
     }
@@ -157,6 +159,7 @@ public class DAOMArm : MonoBehaviour
 
         thruster.SetActive(true);
         littleExtraBit.SetActive(false);
+        GetComponent<LimbStretch>().enabled = false; // Disable limb stretch during recall to prevent weird positioning of the arm.
 
         dumbfix = 0;
         
@@ -280,22 +283,20 @@ public class DAOMArm : MonoBehaviour
     /// </summary>
     void PrepareSurfaceLanding(Vector3 point)
     {
-        if(dumbfix < 1)
+        if (dumbfix < 1)
         {
+            Instantiate(new GameObject("LookReference"), point, Quaternion.identity);
+            thruster.SetActive(false);
+            var rotation = Quaternion.LookRotation(-transform.forward);
+            StartCoroutine(RotateToTargetRotation(transform, rotation, rotationDuration));
             if (recalling)
             {
-                thruster.SetActive(false);
-                var rotation = Quaternion.LookRotation(-transform.forward, point);
-                StartCoroutine(RotateToTargetRotation(transform, rotation, rotationDuration));
                 StartCoroutine(TravelToPoint(lowerArm.transform, lowerArmRetraction, true));
                 dumbfix++;
                 return;
             }
             else
             {
-                thruster.SetActive(false);
-                var rotation = Quaternion.LookRotation(-transform.forward, point);
-                StartCoroutine(RotateToTargetRotation(transform, rotation, rotationDuration));
                 StartCoroutine(TravelToPoint(lowerArm.transform, lowerArmExtention, true));
                 dumbfix++;
             }
@@ -341,7 +342,7 @@ public class DAOMArm : MonoBehaviour
     Quaternion LookDirection(Vector3 target)
     {
         var direction = (target - transform.position).normalized;
-        var rotation = Quaternion.LookRotation(direction, target);
+        var rotation = Quaternion.LookRotation(direction, Vector3.up);
         return rotation;
     }
 
@@ -419,17 +420,19 @@ public class DAOMArm : MonoBehaviour
     void RotateToPlayerHand()
     {
         // Get the rotation of the player hand relative to the player root, and apply that same relative rotation to the daom root to find the rotation for the daom hand.
-        var relativeRot = playerIKTarget.transform.rotation;
+        var relativeRot = playerIKTarget.transform.localRotation * Quaternion.AngleAxis(180, lookReference.transform.up) * Quaternion.Euler(handRotationOffset);
 
         if(mirror)
         { 
-            relativeRot *= Quaternion.Inverse(playerRoot.transform.rotation) * Quaternion.AngleAxis(180, Vector3.right);
+            relativeRot *= Quaternion.Inverse(playerRoot.transform.localRotation) * Quaternion.AngleAxis(180, Vector3.right);
         }
         else
         {
-            relativeRot *= playerRoot.transform.rotation * Quaternion.AngleAxis(-180, Vector3.up) * Quaternion.AngleAxis(-90, Vector3.forward);
+            relativeRot.x *= -1;
+            relativeRot.z *= -1;
+            relativeRot *= playerRoot.transform.localRotation;
         }
         // Apply the relative rotation to the daom root to find the target rotation for the daom hand.
-        daomIKTarget.transform.rotation = daomRoot.transform.rotation * relativeRot;
+        daomIKTarget.transform.rotation = daomRoot.transform.localRotation * relativeRot;
     }
 }

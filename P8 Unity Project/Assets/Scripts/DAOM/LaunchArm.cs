@@ -16,6 +16,7 @@ public class LaunchArm : MonoBehaviour
     RaycastHit hit;
 
     [Header("Firing Arm")]
+    [SerializeField] GameObject boomEffect;
     [SerializeField] GameObject armRoot;
     [SerializeField] GameObject armIKTarget;
     [SerializeField] GameObject armGameObject;
@@ -69,6 +70,7 @@ public class LaunchArm : MonoBehaviour
         {
             camera = Camera.main.gameObject;
         }
+        aiming = false;
     }
 
     void OnEnable()
@@ -138,7 +140,7 @@ public class LaunchArm : MonoBehaviour
 
     void LaunchState(InputAction.CallbackContext ctx)
     {
-        if (ctx.ReadValue<float>() >= 0.9f)
+        if (ctx.ReadValue<float>() >= 0.99f)
         {
             Launch();
         }
@@ -196,7 +198,7 @@ public class LaunchArm : MonoBehaviour
     {
         DrawLineRenderer();
         SetLineMaterial(ValidLayer());
-        SetHolographicArm(ValidLayer());
+        //SetHolographicArm(ValidLayer());
     }
 
     /// <summary>
@@ -207,7 +209,8 @@ public class LaunchArm : MonoBehaviour
         if (!aiming) return false;
 
         RaycastHit[] hits = Physics.RaycastAll(transform.position, transform.forward, rayLength, surfaceLayer);
-
+        Array.Sort(hits, (a,b) => a.distance.CompareTo(b.distance));
+        if(hits.Length == 0) return false;
         foreach (var h in hits)
         {
             if (selectedInteractable != null && !h.collider.transform.IsChildOf(selectedInteractable.transform) &&
@@ -247,7 +250,7 @@ public class LaunchArm : MonoBehaviour
             aiming = false;
             interactor.keepSelectedTargetValid = true;
             
-            if (hit.collider.gameObject.transform.parent.TryGetComponent(out XRGrabInteractable hitInteractable) && selectedInteractable == null)
+            if (hit.collider.gameObject.transform.TryGetComponent(out XRGrabInteractable hitInteractable) && selectedInteractable == null)
             {
                 this.hitInteractable = hitInteractable;
             }
@@ -256,8 +259,11 @@ public class LaunchArm : MonoBehaviour
 
             // Calculate the rotation for the arm to be launched at based on the hit point and the launch point and multiplying with an offset.
             var direction = (hit.point - launchPoint.transform.position).normalized;
-            var rotation = Quaternion.LookRotation(direction, hit.point);
+            var rotation = Quaternion.LookRotation(direction);
 
+            var boomRotation = Quaternion.LookRotation(-camera.transform.position, Vector3.up);
+            Instantiate(boomEffect, launchPoint.transform.position, rotation);
+            
             daomArm = Instantiate(daomArmPrefab, launchPoint.transform.position, rotation);
             daomArm.GetComponent<DAOMArm>().Initialize(armRoot, armIKTarget, hit.point, camera, this.hitInteractable, selectedInteractable);
             OnSetInteractorHandedness(interactor);
@@ -287,19 +293,22 @@ public class LaunchArm : MonoBehaviour
     /// </summary>
     void DrawLineRenderer()
     {
-        if(aiming && daomArm == null)
+        if (lineRenderer)
         {
-            lineRenderer.enabled = true;
-            lineRenderer.SetPosition(0, transform.position);
-            if(ValidLayer())
+            if(aiming && daomArm == null)
             {
-                lineRenderer.SetPosition(1, hit.point);
+                lineRenderer.enabled = true;
+                lineRenderer.SetPosition(0, transform.position);
+                if(ValidLayer())
+                {
+                    lineRenderer.SetPosition(1, hit.point);
+                    return;
+                }
+                lineRenderer.SetPosition(1, transform.forward * rayLength);
                 return;
             }
-            lineRenderer.SetPosition(1, transform.forward * rayLength);
-            return;
+            lineRenderer.enabled = false;
         }
-        lineRenderer.enabled = false;
     }
 
     bool lasttValid = false;
@@ -309,7 +318,7 @@ public class LaunchArm : MonoBehaviour
     /// <param name="valid"></param>
     void SetLineMaterial(bool valid)
     {
-        if(valid == lasttValid) return;
+        if(valid == lasttValid && lineRenderer) return;
         lasttValid = valid;
         lineRenderer.material = valid ? validTarget : invalidTarget;
     }

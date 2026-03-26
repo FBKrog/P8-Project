@@ -6,12 +6,9 @@ public class FollowXROrigin : MonoBehaviour
     [SerializeField] Vector3 headBodyPositionOffset;
 
     [Header("Body Rotation")]
-    [SerializeField] float turnSmoothness = 0.03f;
+    [SerializeField] float bodyRotationSpeed = 4f;
+    [SerializeField] float bodyRotationMaxAngle = 60f;
     [SerializeField] [Tooltip("How much the head influences the body rotation. 0 is no influence, 1 is max.")] [Range(0,1)] float headInfluence = 0.4f;
-
-    [Header("Torso Rotation")]
-    [SerializeField] float torsoRotationSpeed = 5f;
-    [SerializeField] float torsoRotationMaxAngle = 60f;
 
     [Header("Mapping")]
     [SerializeField] VRMap head;
@@ -67,11 +64,11 @@ public class FollowXROrigin : MonoBehaviour
         // Clamp the angle between head forward and hands direction to prevent unnatural twisting
         var angleDifference = Vector3.Angle(headForward, directionToHands);
         Vector3 clampedDir;
-        if(angleDifference > torsoRotationMaxAngle)
+        if(angleDifference > bodyRotationMaxAngle)
         {
-            clampedDir = Vector3.RotateTowards(headForward, directionToHands, Mathf.Deg2Rad * torsoRotationMaxAngle, 0f);
+            clampedDir = Vector3.RotateTowards(headForward, directionToHands, Mathf.Deg2Rad * bodyRotationMaxAngle, 0f);
         }
-         else
+        else
         {
             clampedDir = directionToHands;
         }
@@ -88,7 +85,7 @@ public class FollowXROrigin : MonoBehaviour
         var targetRotation = Quaternion.LookRotation(blendedDir, Vector3.up);
 
         // Smoothly lerp to the target rotation
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, torsoRotationSpeed * Time.deltaTime);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, bodyRotationSpeed * Time.deltaTime);
     }
 }
 

@@ -1,11 +1,11 @@
 using UnityEngine;
 
-public class StretchArms : MonoBehaviour
+public class LimbStretch : MonoBehaviour
 {
     [SerializeField] bool daomArm = false;
-    [SerializeField] ArmStretchData[] arms;
+    [SerializeField] LimbStretchData[] limbs;
 
-    [SerializeField] [Tooltip("The closer the value is to 1, the more the lower arm will stretch. Closer to 0, means the upper arm will do more of the stretching.")] [Range(0,1)] float armStretchWeight = 0.5f;
+    [SerializeField] [Tooltip("The closer the value is to 1, the more the lower limb will stretch. Closer to 0, means the upper limb will do more of the stretching.")] [Range(0,1)] float limbStretchWeight = 0.5f;
     [SerializeField] float stretchAmount = 0.5f;
 
     bool canStretch = true;
@@ -31,19 +31,19 @@ public class StretchArms : MonoBehaviour
 
     void LateUpdate()
     {
-        foreach (var arm in arms)
+        for (int i = 0; i < limbs.Length; i++)
         {
-            if (!canStretch && arm == arms[1]) continue;
-            StretchArm(arm.upperArm, arm.lowerArm, arm.tip, arm.ikTarget);
+            if (!canStretch && i == 1) continue;
+            StretchLimb(limbs[i].upperLimb, limbs[i].lowerLimb, limbs[i].tip, limbs[i].ikTarget);
         }
     }
 
-    void StretchArm(Transform upperArm, Transform lowerArm, Transform tip, Transform ikTarget)
+    void StretchLimb(Transform upperLimb, Transform lowerLimb, Transform tip, Transform ikTarget)
     {
         var direction = ikTarget.position - tip.position;
         direction = Vector3.ClampMagnitude(direction, stretchAmount);
-        upperArm.position += direction * (1 - armStretchWeight);
-        lowerArm.position += direction * armStretchWeight;
+        upperLimb.position += direction * (1 - limbStretchWeight);
+        lowerLimb.position += direction * limbStretchWeight;
     }
 
     void ToggleStretch()
@@ -53,10 +53,10 @@ public class StretchArms : MonoBehaviour
 }
 
 [System.Serializable]
-public class ArmStretchData
+public class LimbStretchData
 {
-    public Transform upperArm;
-    public Transform lowerArm;
+    public Transform upperLimb;
+    public Transform lowerLimb;
     public Transform tip;
     public Transform ikTarget;
 }

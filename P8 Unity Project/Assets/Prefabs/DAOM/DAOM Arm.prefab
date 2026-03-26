@@ -326,7 +326,6 @@ GameObject:
   - component: {fileID: 4476448574186069263}
   - component: {fileID: 1655372739361794311}
   - component: {fileID: 593800909442582437}
-  - component: {fileID: 4571226293692559386}
   m_Layer: 0
   m_Name: DAOM Arm
   m_TagString: Untagged
@@ -372,12 +371,13 @@ MonoBehaviour:
   tip: {fileID: 4192487097419824562}
   daomIKTarget: {fileID: 4056231379922148810}
   thruster: {fileID: 7780825517093859950}
-  travelSpeed: 7
+  travelSpeed: 8.5
   lowerArmExtention: {x: -0.008820044, y: 0, z: 0}
   lowerArmRetraction: {x: 0, y: 0, z: 0}
   retractionTime: 0.4
   rotationStartTime: 0.8
   rotationDuration: 0.2
+  handRotationOffset: {x: 180, y: 0, z: 90}
   mirror: 0
   littleExtraBit: {fileID: 132302967242953927}
   wallDistanceOffset: 0.3
@@ -397,41 +397,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StretchArms
   daomArm: 1
-  arms:
-  - upperArm: {fileID: 2712303099109883064}
-    lowerArm: {fileID: 2238063664130369152}
+  limbs:
+  - upperLimb: {fileID: 2712303099109883064}
+    lowerLimb: {fileID: 2238063664130369152}
     tip: {fileID: 8490718710929178189}
     ikTarget: {fileID: 8217224099838130431}
-  armStretchWeight: 0.5
-  stretchAmount: 0.5
---- !u!114 &4571226293692559386
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1114692282621708169}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 50a8f01b300ac0248bfe77895cc1ebfb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DynamicHandAnimation
-  handData:
-    thumb:
-      joints: []
-      jointValues: []
-    index:
-      joints: []
-      jointValues: []
-    middle:
-      joints: []
-      jointValues: []
-    ring:
-      joints: []
-      jointValues: []
-    pinky:
-      joints: []
-      jointValues: []
+  limbStretchWeight: 0.5
+  stretchAmount: 1
 --- !u!1 &1413934980573499871
 GameObject:
   m_ObjectHideFlags: 0
@@ -880,7 +852,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2544923124343288057}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 50a8f01b300ac0248bfe77895cc1ebfb, type: 3}
   m_Name: 
@@ -891,44 +863,44 @@ MonoBehaviour:
       - {fileID: 5820002956484769430}
       - {fileID: 7932096189802337113}
       jointValues:
-      - 0
-      - 0
+      - {x: 8.2178e-41, y: 8.55e-43, z: 0}
+      - {x: 0, y: 0, z: 0}
     index:
       joints:
       - {fileID: 7535575411010579803}
       - {fileID: 973002423775382078}
       - {fileID: 8142193734531132812}
       jointValues:
-      - 0
-      - 0
-      - 0
+      - {x: 8.2223e-41, y: 8.55e-43, z: 0}
+      - {x: 0, y: 0, z: 0}
+      - {x: 8.1996e-41, y: 0.00095159427, z: 0}
     middle:
       joints:
       - {fileID: 1108331269314120264}
       - {fileID: 3876638631013010434}
       - {fileID: 3449960226971963083}
       jointValues:
-      - 0
-      - 0
-      - 0
+      - {x: 8.2001e-41, y: 8.55e-43, z: 0}
+      - {x: 0, y: 0, z: 0}
+      - {x: 8.2119e-41, y: 0.00095159427, z: 0}
     ring:
       joints:
       - {fileID: 5522505933423144140}
       - {fileID: 8756916963939878847}
       - {fileID: 2225667906916428498}
       jointValues:
-      - 0
-      - 0
-      - 0
+      - {x: 8.217e-41, y: 8.55e-43, z: 0}
+      - {x: 0, y: 0, z: 0}
+      - {x: 8.2262e-41, y: 0.00095159427, z: 0}
     pinky:
       joints:
       - {fileID: 6395450547359555941}
       - {fileID: 2211476875953610011}
       - {fileID: 1377708300043238659}
       jointValues:
-      - 0
-      - 0
-      - 0
+      - {x: 8.2186e-41, y: 8.55e-43, z: 0}
+      - {x: 0, y: 0, z: 0}
+      - {x: 8.2038e-41, y: 0.00095159427, z: 0}
 --- !u!1 &2554957837742694842
 GameObject:
   m_ObjectHideFlags: 0
