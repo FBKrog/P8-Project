@@ -49,7 +49,7 @@ MonoBehaviour:
       id: 0
       isStickyNote: 0
     - model: {fileID: 0}
-      id: 2
+      id: 1
       isStickyNote: 1
   - title: Animated Noise
     position:
@@ -196,9 +196,6 @@ MonoBehaviour:
     - model: {fileID: 8926484042661614558}
       id: 0
       isStickyNote: 0
-    - model: {fileID: 0}
-      id: 1
-      isStickyNote: 1
   - title: 
     position:
       serializedVersion: 2
@@ -211,7 +208,7 @@ MonoBehaviour:
       id: 0
       isStickyNote: 0
     - model: {fileID: 0}
-      id: 3
+      id: 2
       isStickyNote: 1
   - title: 
     position:
@@ -225,7 +222,7 @@ MonoBehaviour:
       id: 0
       isStickyNote: 0
     - model: {fileID: 0}
-      id: 4
+      id: 3
       isStickyNote: 1
   - title: 
     position:
@@ -239,7 +236,7 @@ MonoBehaviour:
       id: 0
       isStickyNote: 0
     - model: {fileID: 0}
-      id: 5
+      id: 4
       isStickyNote: 1
   stickyNoteInfos:
   - title: 0-1 Line Sequencer
@@ -258,24 +255,6 @@ MonoBehaviour:
     theme: 
     textSize: Small
     colorTheme: 2
-  - title: TexIndex
-    position:
-      serializedVersion: 2
-      x: 6593
-      y: -6968
-      width: 419
-      height: 119
-    contents: 'Our U, N, I, T, and Y letters are inside a sprite sheet.
-
-      We''re
-      spawning 5 particles and using their spawn index, which ranges from 0 to 4,
-      to set our texIndex. By doing so, each particle gets assigned a different letter
-      in our Sprite Sheet.
-
-'
-    theme: 
-    textSize: Small
-    colorTheme: 3
   - title: 'Offset Animation:'
     position:
       serializedVersion: 2
@@ -1002,7 +981,7 @@ MonoBehaviour:
   m_UIIgnoredErrors: []
   m_Parent: {fileID: 114350483966674976}
   m_Children: []
-  m_UIPosition: {x: 4797, y: -5679}
+  m_UIPosition: {x: 4798, y: -5728}
   m_UICollapsed: 0
   m_UISuperCollapsed: 0
   m_InputSlots:
@@ -1086,7 +1065,8 @@ MonoBehaviour:
       m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
         PublicKeyToken=b77a5c561934e089
   m_Direction: 1
-  m_LinkedSlots: []
+  m_LinkedSlots:
+  - {fileID: 8926484042661614816}
 --- !u!114 &8926484042661614633
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2699,7 +2679,7 @@ MonoBehaviour:
   m_Parent: {fileID: 114350483966674976}
   m_Children: []
   m_UIPosition: {x: 4985, y: -5828}
-  m_UICollapsed: 1
+  m_UICollapsed: 0
   m_UISuperCollapsed: 0
   m_InputSlots:
   - {fileID: 8926484042661614815}
@@ -2783,7 +2763,8 @@ MonoBehaviour:
       m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
         PublicKeyToken=b77a5c561934e089
   m_Direction: 0
-  m_LinkedSlots: []
+  m_LinkedSlots:
+  - {fileID: 8926484042661614632}
 --- !u!114 &8926484042661614817
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3266,7 +3247,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: UnityEngine.AnimationCurve, UnityEngine.CoreModule, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"frames":[{"time":0.00482940673828125,"value":0.50238037109375,"inTangent":0.0,"outTangent":0.0,"tangentMode":0,"leftTangentMode":0,"rightTangentMode":0,"broken":false},{"time":1.0,"value":0.0,"inTangent":0.0,"outTangent":0.0,"tangentMode":0,"leftTangentMode":0,"rightTangentMode":0,"broken":false}],"preWrapMode":8,"postWrapMode":8,"version":1}'
+      m_SerializableObject: '{"frames":[{"time":0.00482940673828125,"value":1.0,"inTangent":0.0,"outTangent":0.0,"tangentMode":0,"leftTangentMode":0,"rightTangentMode":0,"broken":false},{"time":0.4964448809623718,"value":0.5089977979660034,"inTangent":-1.5070624351501465,"outTangent":-1.5070624351501465,"tangentMode":0,"leftTangentMode":0,"rightTangentMode":0,"broken":false},{"time":1.0,"value":0.0,"inTangent":0.0,"outTangent":0.0,"tangentMode":0,"leftTangentMode":0,"rightTangentMode":0,"broken":false}],"preWrapMode":8,"postWrapMode":8,"version":1}'
     m_Space: -1
   m_Property:
     name: curve
@@ -3435,7 +3416,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
           PublicKeyToken=b77a5c561934e089
-      m_SerializableObject: 50
+      m_SerializableObject: 100
     m_Space: -1
   m_Property:
     name: y
@@ -4148,7 +4129,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
           PublicKeyToken=b77a5c561934e089
-      m_SerializableObject: 1
+      m_SerializableObject: 0.5
     m_Space: -1
   m_Property:
     name: B
@@ -4494,7 +4475,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
           PublicKeyToken=b77a5c561934e089
-      m_SerializableObject: 3.5
+      m_SerializableObject: 1
     m_Space: -1
   m_Property:
     name: LoopDuration
@@ -5114,7 +5095,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
           PublicKeyToken=b77a5c561934e089
-      m_SerializableObject: 20
+      m_SerializableObject: 4
     m_Space: -1
   m_Property:
     name: a
@@ -10457,7 +10438,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
           PublicKeyToken=b77a5c561934e089
-      m_SerializableObject: 4
+      m_SerializableObject: 1
     m_Space: -1
   m_Property:
     name: _Lifetime
@@ -12012,7 +11993,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: UnityEngine.Vector3, UnityEngine.CoreModule, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"x":2.004758596420288,"y":2.0984723567962648,"z":23.93181037902832}'
+      m_SerializableObject: '{"x":2.004757881164551,"y":2.0984716415405275,"z":23.93180274963379}'
     m_Space: -1
   m_Property:
     name: _Color
