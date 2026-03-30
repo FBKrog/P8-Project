@@ -49,7 +49,7 @@ MonoBehaviour:
       id: 0
       isStickyNote: 0
     - model: {fileID: 0}
-      id: 2
+      id: 1
       isStickyNote: 1
   - title: Animated Noise
     position:
@@ -196,9 +196,6 @@ MonoBehaviour:
     - model: {fileID: 8926484042661614558}
       id: 0
       isStickyNote: 0
-    - model: {fileID: 0}
-      id: 1
-      isStickyNote: 1
   - title: 
     position:
       serializedVersion: 2
@@ -211,7 +208,7 @@ MonoBehaviour:
       id: 0
       isStickyNote: 0
     - model: {fileID: 0}
-      id: 3
+      id: 2
       isStickyNote: 1
   - title: 
     position:
@@ -225,7 +222,7 @@ MonoBehaviour:
       id: 0
       isStickyNote: 0
     - model: {fileID: 0}
-      id: 4
+      id: 3
       isStickyNote: 1
   - title: 
     position:
@@ -239,7 +236,7 @@ MonoBehaviour:
       id: 0
       isStickyNote: 0
     - model: {fileID: 0}
-      id: 5
+      id: 4
       isStickyNote: 1
   stickyNoteInfos:
   - title: 0-1 Line Sequencer
@@ -258,24 +255,6 @@ MonoBehaviour:
     theme: 
     textSize: Small
     colorTheme: 2
-  - title: TexIndex
-    position:
-      serializedVersion: 2
-      x: 6593
-      y: -6968
-      width: 419
-      height: 119
-    contents: 'Our U, N, I, T, and Y letters are inside a sprite sheet.
-
-      We''re
-      spawning 5 particles and using their spawn index, which ranges from 0 to 4,
-      to set our texIndex. By doing so, each particle gets assigned a different letter
-      in our Sprite Sheet.
-
-'
-    theme: 
-    textSize: Small
-    colorTheme: 3
   - title: 'Offset Animation:'
     position:
       serializedVersion: 2
@@ -12014,7 +11993,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: UnityEngine.Vector3, UnityEngine.CoreModule, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"x":2.004758596420288,"y":2.0984723567962648,"z":23.93181037902832}'
+      m_SerializableObject: '{"x":2.004757881164551,"y":2.0984716415405275,"z":23.93180274963379}'
     m_Space: -1
   m_Property:
     name: _Color
