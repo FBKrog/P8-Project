@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 public class TeleportationActivator : MonoBehaviour
@@ -49,6 +50,20 @@ public class TeleportationActivator : MonoBehaviour
 
     private void ExecuteTeleport()
     {
+        // Programmatically select then immediately deselect the hovered TeleportationArea.
+        // StartManualInteraction → EndManualInteraction fires OnSelectExited on the area,
+        // which is the trigger (TeleportTrigger=OnSelectExited) that queues the position
+        // change in TeleportationProvider. This runs while the screen is black from TeleportBlink.
+        var hovered = teleportInteractor.interactablesHovered;
+        if (hovered.Count > 0)
+        {
+            var target = hovered[0] as IXRSelectInteractable;
+            if (target != null)
+            {
+                teleportInteractor.StartManualInteraction(target);
+                teleportInteractor.EndManualInteraction();
+            }
+        }
         teleportInteractor.gameObject.SetActive(false);
         onAfterTeleport?.Invoke();
     }

@@ -21,16 +21,10 @@ This is a **Unity VR game** (PC VR, Windows/OpenXR) where the player manipulates
 
 ---
 
-## Scene Hierarchy (main: Anders Testing Scene)
+## Scene Hierarchy (main: MainGameplay)
 
 ```
-VR Player  [XROrigin, LocomotionMediator]
-└── Camera Offset
-    └── Main Camera  [tag: MainCamera]
-    └── LeftHand Controller  [XRController, XRRayInteractor, HandTPOrbConnect]
-    └── RightHand Controller  [XRController, XRDirectInteractor]
-└── Locomotion
-    └── Teleportation → TeleportationProvider
+NewKylePlayer is the VR player
 ```
 
 Other scenes: `NikoScene` (DAOM arm), `JakobScene` (environment), `Felix Scene Intro/Shader` (VFX/cel-shading), `Beck's VFX Test Area`.
