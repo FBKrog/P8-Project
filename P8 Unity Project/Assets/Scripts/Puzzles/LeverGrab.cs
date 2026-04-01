@@ -8,8 +8,6 @@ using UnityEngine.XR.Interaction.Toolkit.Interactors;
 using UnityEditor;
 #endif
 
-public enum LeverTechnique { Homer, GoGo, Daom }
-
 /// <summary>
 /// Lever puzzle component. Attach to the lever GameObject alongside an XRGrabInteractable
 /// and a Rigidbody (no HingeJoint needed — LeverGrab owns the transform).
@@ -26,16 +24,11 @@ public enum LeverTechnique { Homer, GoGo, Daom }
 public class LeverGrab : MonoBehaviour, IRotaryGrabbable
 {
     [Header("Technique References")]
-    public HOMERRaycast       homer;
-    public GoGoExtend         goGoExtend;
+    public HOMERRaycast homer;
+    public GoGoExtend goGoExtend;
     [Tooltip("The XRDirectInteractor that sits on GoGo's virtual hand GameObject.")]
     public XRDirectInteractor goGoInteractor;
     // DAOM resolved at runtime via DAOMArm.ActiveInstance
-
-    [Header("Allowed Technique")]
-    [Tooltip("Only grabs from this technique are accepted. Set in the Inspector to match the " +
-             "interaction mode active for this lever. Prevents interactor identity ambiguity.")]
-    [SerializeField] private LeverTechnique allowedTechnique = LeverTechnique.Homer;
 
     [Header("Lever Geometry")]
     [Tooltip("Empty child at the grip end of the lever arm. If null, uses the lever pivot.")]
@@ -49,9 +42,9 @@ public class LeverGrab : MonoBehaviour, IRotaryGrabbable
     [Tooltip("Pull past this angle (degrees) to trigger the snap.")]
     public float activationAngle = 75f;
     [Tooltip("Angle the lever snaps to on activation.")]
-    public float snapToAngle     = 90f;
+    public float snapToAngle = 90f;
     [Tooltip("Duration of the snap animation in seconds.")]
-    public float snapDuration    = 0.15f;
+    public float snapDuration = 0.15f;
 
     [Header("Events")]
     public UnityEvent OnLeverActivated;
@@ -60,20 +53,20 @@ public class LeverGrab : MonoBehaviour, IRotaryGrabbable
     private enum ActiveTechnique { None, Homer, GoGo, Daom }
     private ActiveTechnique activeTechnique = ActiveTechnique.None;
 
-    private bool isGrabbed   = false;
+    private bool isGrabbed = false;
     private bool isActivated = false;
 
-    private Rigidbody          leverRb;
+    private Rigidbody leverRb;
     private XRGrabInteractable leverGrabbable;
 
-    private Vector3    leverFixedPosition; // world-space position locked at Awake (Fix 1)
+    private Vector3 leverFixedPosition; // world-space position locked at Awake (Fix 1)
     private Quaternion restWorldRotation;  // world-space rotation when grab started (Fix 3)
-    private Vector3    hingeWorldAxis;     // world-space hinge axis (fixed per grab) (Fix 3)
-    private Vector3    restDir;            // world-space rest direction of lever arm (set on grab start)
-    private float      currentAngle;       // current lever angle this frame
+    private Vector3 hingeWorldAxis;     // world-space hinge axis (fixed per grab) (Fix 3)
+    private Vector3 restDir;            // world-space rest direction of lever arm (set on grab start)
+    private float currentAngle;       // current lever angle this frame
 
     private Vector3 grabRefDirProjected; // reference direction for next frame's incremental delta
-    private bool    isFirstGrabFrame;    // true on the first grabbed LateUpdate; skips angle update
+    private bool isFirstGrabFrame;    // true on the first grabbed LateUpdate; skips angle update
 
     private int _dbgFrame; // throttle per-frame logs
 
@@ -81,7 +74,7 @@ public class LeverGrab : MonoBehaviour, IRotaryGrabbable
 
     void Awake()
     {
-        leverRb        = GetComponent<Rigidbody>();
+        leverRb = GetComponent<Rigidbody>();
         leverGrabbable = GetComponent<XRGrabInteractable>();
 
         // Fix 1: cache pivot position so HOMER's BeginGrab teleport can be repaired each frame.
@@ -96,7 +89,7 @@ public class LeverGrab : MonoBehaviour, IRotaryGrabbable
 
         // Cache rest state here (before physics runs) so angle-0 always matches the designed pose.
         restWorldRotation = transform.rotation;
-        hingeWorldAxis    = (restWorldRotation * hingeAxisLocal.normalized).normalized;
+        hingeWorldAxis = (restWorldRotation * hingeAxisLocal.normalized).normalized;
         Vector3 toHandleAwake = leverHandlePoint.position - transform.position;
         restDir = toHandleAwake.sqrMagnitude > 1e-6f
             ? toHandleAwake.normalized
@@ -107,8 +100,8 @@ public class LeverGrab : MonoBehaviour, IRotaryGrabbable
             // Disable XRI position/rotation tracking — we own the lever transform entirely.
             leverGrabbable.trackPosition = false;
             leverGrabbable.trackRotation = false;
-            leverGrabbable.throwOnDetach  = false;
-            leverGrabbable.movementType  = XRBaseInteractable.MovementType.Instantaneous;
+            leverGrabbable.throwOnDetach = false;
+            leverGrabbable.movementType = XRBaseInteractable.MovementType.Instantaneous;
 
             // Fix 2: snap interactor to handle point, not object origin.
             leverGrabbable.attachTransform = leverHandlePoint;
@@ -125,7 +118,7 @@ public class LeverGrab : MonoBehaviour, IRotaryGrabbable
         if (homer != null)
         {
             homer.GrabStarted += OnHomerGrabStarted;
-            homer.GrabEnded   += OnHomerGrabEnded;
+            homer.GrabEnded += OnHomerGrabEnded;
         }
     }
 
@@ -134,7 +127,7 @@ public class LeverGrab : MonoBehaviour, IRotaryGrabbable
         if (homer != null)
         {
             homer.GrabStarted -= OnHomerGrabStarted;
-            homer.GrabEnded   -= OnHomerGrabEnded;
+            homer.GrabEnded -= OnHomerGrabEnded;
         }
     }
 
@@ -173,7 +166,7 @@ public class LeverGrab : MonoBehaviour, IRotaryGrabbable
 
         // 2. Arc-lock math — project onto the rotation plane (normal = hinge axis).
         Vector3 pivotToHand = virtualHandPos - transform.position;
-        Vector3 projected   = Vector3.ProjectOnPlane(pivotToHand, hingeWorldAxis);
+        Vector3 projected = Vector3.ProjectOnPlane(pivotToHand, hingeWorldAxis);
         if (projected.sqrMagnitude < 1e-6f)
         {
             Debug.LogWarning($"[LeverGrab:{name}] LateUpdate — projected vector near-zero (hand directly on hinge axis?), skipping");
@@ -198,10 +191,10 @@ public class LeverGrab : MonoBehaviour, IRotaryGrabbable
 
         // Incremental delta: how much did the projected direction rotate since last frame?
         float angleDelta = Vector3.SignedAngle(grabRefDirProjected, projected.normalized, hingeWorldAxis);
-        float lo         = Mathf.Min(0f, snapToAngle);
-        float hi         = Mathf.Max(0f, snapToAngle);
-        float angle      = Mathf.Clamp(currentAngle + angleDelta, lo, hi);
-        currentAngle     = angle;
+        float lo = Mathf.Min(0f, snapToAngle);
+        float hi = Mathf.Max(0f, snapToAngle);
+        float angle = Mathf.Clamp(currentAngle + angleDelta, lo, hi);
+        currentAngle = angle;
 
         transform.rotation = Quaternion.AngleAxis(angle, hingeWorldAxis) * restWorldRotation;
 
@@ -231,11 +224,6 @@ public class LeverGrab : MonoBehaviour, IRotaryGrabbable
         if (obj != gameObject)
         {
             Debug.Log($"[LeverGrab:{name}] OnHomerGrabStarted — ignored (grabbed '{obj?.name}', not this lever)");
-            return;
-        }
-        if (allowedTechnique != LeverTechnique.Homer)
-        {
-            Debug.Log($"[LeverGrab:{name}] OnHomerGrabStarted — skipped (allowedTechnique={allowedTechnique})");
             return;
         }
         Debug.Log($"[LeverGrab:{name}] OnHomerGrabStarted — matched, calling StartGrab(Homer)");
@@ -268,15 +256,13 @@ public class LeverGrab : MonoBehaviour, IRotaryGrabbable
         ActiveTechnique technique = ActiveTechnique.None;
         string interactorName = args.interactorObject?.transform?.name ?? "null";
 
-        if (allowedTechnique == LeverTechnique.GoGo &&
-            goGoInteractor != null &&
+        if (goGoInteractor != null &&
             args.interactorObject as XRDirectInteractor == goGoInteractor)
         {
             technique = ActiveTechnique.GoGo;
             Debug.Log($"[LeverGrab:{name}] OnSelectEntered — matched GoGo interactor '{interactorName}'");
         }
-        else if (allowedTechnique == LeverTechnique.Daom &&
-                 DAOMArm.ActiveInstance != null &&
+        else if (DAOMArm.ActiveInstance != null &&
                  args.interactorObject as XRDirectInteractor == DAOMArm.ActiveInstance.Interactor)
         {
             technique = ActiveTechnique.Daom;
@@ -284,8 +270,7 @@ public class LeverGrab : MonoBehaviour, IRotaryGrabbable
         }
         else
         {
-            Debug.Log($"[LeverGrab:{name}] OnSelectEntered — ignored " +
-                      $"(allowedTechnique={allowedTechnique}, interactor='{interactorName}')");
+            Debug.Log($"[LeverGrab:{name}] OnSelectEntered — ignored (interactor='{interactorName}')");
         }
 
         if (technique != ActiveTechnique.None)
@@ -318,10 +303,10 @@ public class LeverGrab : MonoBehaviour, IRotaryGrabbable
             return;
         }
 
-        activeTechnique  = technique;
-        isGrabbed        = true;
+        activeTechnique = technique;
+        isGrabbed = true;
         isFirstGrabFrame = true; // reference captured in first grabbed LateUpdate (after technique scripts)
-        _dbgFrame        = 0;
+        _dbgFrame = 0;
 
         transform.position = leverFixedPosition;
 
@@ -334,7 +319,7 @@ public class LeverGrab : MonoBehaviour, IRotaryGrabbable
 
         Debug.Log($"[LeverGrab:{name}] EndGrab — technique={activeTechnique}  heldAngle={currentAngle:F1}°");
 
-        isGrabbed       = false;
+        isGrabbed = false;
         activeTechnique = ActiveTechnique.None;
 
         // Leave kinematic — no HingeJoint means free physics would tumble the lever under gravity.
@@ -351,7 +336,7 @@ public class LeverGrab : MonoBehaviour, IRotaryGrabbable
         ActiveTechnique technique = activeTechnique;
         Debug.Log($"[LeverGrab:{name}] ForceRelease — technique={technique}  angle={currentAngle:F1}°");
 
-        isGrabbed       = false;  // guard against re-entry FIRST
+        isGrabbed = false;  // guard against re-entry FIRST
         activeTechnique = ActiveTechnique.None;
 
         switch (technique)
@@ -398,12 +383,12 @@ public class LeverGrab : MonoBehaviour, IRotaryGrabbable
         ForceRelease();
 
         float startAngle = currentAngle;
-        float elapsed    = 0f;
+        float elapsed = 0f;
 
         while (elapsed < snapDuration)
         {
             elapsed += Time.deltaTime;
-            float t     = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / snapDuration));
+            float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / snapDuration));
             float angle = Mathf.Lerp(startAngle, snapToAngle, t);
             transform.rotation = Quaternion.AngleAxis(angle, hingeWorldAxis) * restWorldRotation;
             yield return null;
@@ -467,12 +452,12 @@ public class LeverGrab : MonoBehaviour, IRotaryGrabbable
 #if UNITY_EDITOR
     void OnDrawGizmosSelected()
     {
-        Transform pivot  = transform;
+        Transform pivot = transform;
         Transform handle = leverHandlePoint != null ? leverHandlePoint : transform;
 
-        Vector3 pivotPos  = pivot.position;
+        Vector3 pivotPos = pivot.position;
         Vector3 handlePos = handle.position;
-        float   armLength = Vector3.Distance(pivotPos, handlePos);
+        float armLength = Vector3.Distance(pivotPos, handlePos);
         if (armLength < 0.001f) armLength = 0.3f;
 
         // World-space hinge axis for gizmos (use current rotation, not grab-cached one).
@@ -489,7 +474,7 @@ public class LeverGrab : MonoBehaviour, IRotaryGrabbable
         Gizmos.DrawWireSphere(handlePos, 0.03f);
 
         // Rest direction projected onto hinge plane.
-        Vector3 toHandle     = handlePos - pivotPos;
+        Vector3 toHandle = handlePos - pivotPos;
         Vector3 restDirLocal = toHandle.sqrMagnitude > 1e-6f
             ? Vector3.ProjectOnPlane(toHandle.normalized, axisWorld)
             : Vector3.ProjectOnPlane(pivot.TransformDirection(Vector3.down), axisWorld);
