@@ -30,17 +30,25 @@ public class ObjectivesManager : MonoBehaviour
         var obj = objectives.Find(o => o.objectiveName == objectiveName);
         if (obj == null)
         {
-            Debug.LogWarning($"[ObjectivesManager] Objective '{objectiveName}' not found.");
+            Debug.LogWarning($"[ObjectivesManager] Objective '{objectiveName}' not found in list.");
             return;
         }
 
-        if (obj.isCompleted) return;
+        if (obj.isCompleted)
+        {
+            Debug.Log($"[ObjectivesManager] Objective '{objectiveName}' already completed — skipping.");
+            return;
+        }
 
         obj.isCompleted = true;
+        Debug.Log($"[ObjectivesManager] Objective '{objectiveName}' completed. Firing onObjectiveCompleted.");
         onObjectiveCompleted?.Invoke(objectiveName);
 
         if (AllCompleted())
+        {
+            Debug.Log($"[ObjectivesManager] All objectives completed. Firing onAllObjectivesCompleted.");
             onAllObjectivesCompleted?.Invoke();
+        }
     }
 
     public bool IsCompleted(string objectiveName)

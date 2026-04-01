@@ -38,7 +38,7 @@ Other scenes: `NikoScene` (DAOM arm), `JakobScene` (environment), `Felix Scene I
 | Script | Purpose |
 |---|---|
 | `TeleportationActivator.cs` | Enables XRRayInteractor on thumbstick hold/release. Gate: `orbConnected` must be true. Events: `onBeforeTeleport`, `onAfterTeleport`. |
-| `TeleportBlink.cs` | Blink-to-black fade. Screen Space - Overlay Canvas (`sortingOrder = 32767`). Coroutine: fade out → 2 frames black → ExecuteTeleport → 2 frames → fade in. |
+| `TeleportBlink.cs` | Blink-to-black fade. Screen Space - Overlay Canvas (`sortingOrder = 32767`). Coroutine: fade out → configurable `blackFramesBeforeExecute` black frames → ExecuteTeleport → `blackFramesAfterExecute` frames → fade in. Fires `onTeleportedEvent` (UnityEvent) immediately after ExecuteTeleport — wire here to advance tutorial steps. |
 | `TeleportLegsReticle.cs` | Spawns TeleportLegs FBX at aim point with dissolve material on all MeshRenderers. |
 | `TeleportPad.cs` | Empty marker for pad objects. |
 
@@ -48,6 +48,9 @@ Other scenes: `NikoScene` (DAOM arm), `JakobScene` (environment), `Felix Scene I
 |---|---|
 | `TeleportOrb.cs` | Marker on the teleport orb. Has `OnPlacedOnPad()` callback stub. |
 | `HandTPOrbConnect.cs` | Left-hand snap zone (radius 0.12 m). Detects orb proximity, force-releases from right hand, snaps, sets `orbConnected = true` on TeleportationActivator. 0.5 s re-snap cooldown. |
+| `DynamicHandAnimation.cs` | Animates finger joint rotations each FixedUpdate from HandData; drives hand gesture poses on the avatar. |
+| `FeetToGround.cs` | Raycasts from head position to find ground; repositions feet IK targets and scales leg segments to match terrain height. |
+| `LimbStretch.cs` | Stretches upper/lower limb segments toward an IK target during DAOM arm launch/recall; toggled by `LaunchArm` events. |
 
 ### Tutorial & Objectives (`Assets/Scripts/`)
 
@@ -56,7 +59,7 @@ Other scenes: `NikoScene` (DAOM arm), `JakobScene` (environment), `Felix Scene I
 | `TutorialManager.cs` | World-space subtitle panel that smoothly follows the camera (1.5 m ahead). 30+ configurable steps, optional auto-advance timers, dynamic TextMeshPro panel width. |
 | `ObjectivesManager.cs` | Central state machine for named objectives. Events: `onObjectiveCompleted(string)`, `onAllObjectivesCompleted`. API: `CompleteObjective()`, `IsCompleted()`, `AllCompleted()`. |
 | `TutorialObjective.cs` | Bridges ObjectivesManager events → TutorialManager step advances. |
-| `OrbTutorialObjective.cs` | Tutorial sequencer for orb pickup. HOMER mode (4 steps: extend → grab → retract → snap) and GoGo mode (4 steps: reach ≥ 5 m → grab → camera near → snap). |
+| `OrbTutorialObjective.cs` | Tutorial sequencer for orb pickup. Three modes selected at runtime (HOMER → DAOM → GoGo priority). HOMER (4 steps: ExtendStarted → grab → RetractStarted → snap). DAOM (4 steps: `ArmLaunched` → `GrabbedGameObject` == orb → `ArmRecalled` → snap). GoGo (4 steps: CurrentRv ≥ 5 m → grab → camera within 1 m → snap). Fields: `homerRaycast`, `launchArm`, `goGoExtend`, `orbConnect`, `orbGrabInteractable`. |
 
 ### Door & Trigger (`Assets/Scripts/`)
 
@@ -77,6 +80,8 @@ Other scenes: `NikoScene` (DAOM arm), `JakobScene` (environment), `Felix Scene I
 | `WireEndGrabbable.cs` | Makes WireBuilder EndAnchor grabbable. Kinematic while held (MovePosition), dynamic on release. VelocityTracking mode. |
 | `OrbPedestal.cs` | Snap zone (radius 0.15 m) for the teleport orb. Accepts from XRI or HandTPOrbConnect. Event: `OrbPlaced`. |
 | `PuzzleInteractableGate.cs` | Disables all XRBaseInteractables until `Unlock()` is called. |
+| `LeverGrab.cs` | Arc-locks virtual hand to lever rotation plane; rotates lever around configurable hinge axis. Accepts **all three techniques** (HOMER via `GrabStarted` event, GoGo/DAOM via `selectEntered`). Snaps to `snapToAngle` and fires `OnLeverActivated` once past `activationAngle`. DAOM resolved via `DAOMArm.ActiveInstance` at runtime. |
+| `ValveGrab.cs` | Cumulative-rotation valve. Free hand positioning (no arc-lock, unlike LeverGrab). Accumulates signed rotation about `spinAxisLocal`; optional `lockSpinDirection` prevents direction reversal. Fires `OnValveActivated` once `cumulativeRotation` exceeds `activationRotation`. |
 
 ### Extended Reach — HOMER (`Assets/Scripts/HOMER/`)
 
@@ -93,14 +98,14 @@ Other scenes: `NikoScene` (DAOM arm), `JakobScene` (environment), `Felix Scene I
 |---|---|
 | `GoGoExtend.cs` | Poupyrev 1996 Go-Go. Chest origin = camera − 0.3 m Y. Linear zone R_v = R_r if R_r < D (D = 2/3 × armLength). Non-linear: R_v = R_r + k(R_r−D)². Public: `CurrentRr`, `CurrentRv`. Tunable: armLength (0.6 m), maxReachDistance (5 m). |
 
-### Avatar & DAOM Arm (`Assets/Niko/`)
+### Avatar & DAOM Arm (`Assets/Scripts/DAOM/` and `Assets/Scripts/Player/`)
 
 | Script | Purpose |
 |---|---|
-| `FollowXROrigin.cs` | Maps HMD/controller poses to IK targets on the avatar. |
-| `VRAvatarScaler.cs` | Scales avatar limbs from measured player height (1.2–2.2 m range). |
-| `LaunchArm.cs` | Aiming, raycast feedback (green/red line), and launch trigger for the DAOM arm. Static events: `SetInteractorHandedness`, `ArmRecalled`, `GrabbedGameObject`, `EarlyRecall`. |
-| `DAOMArm.cs` | Launched-arm behavior. Travel → rotate to surface normal → attach → mirror player hand. Recall retracts. If arm hits object, auto-recall delivers object to player hand. |
+| `FollowXROrigin.cs` | Maps HMD/controller poses to IK targets on the avatar. (`Assets/Scripts/Player/`) |
+| `VRAvatarScaler.cs` | Scales avatar limbs from measured player height (1.2–2.2 m range). (`Assets/Scripts/Player/`) |
+| `LaunchArm.cs` | Aiming, raycast feedback (green/red line), and launch trigger for the DAOM arm. Static events: `SetInteractorHandedness`, `ArmLaunched`, `ArmRecalled`, `GrabbedGameObject`, `EarlyRecall`. (`Assets/Scripts/DAOM/`) |
+| `DAOMArm.cs` | Launched-arm behavior. Travel → rotate to surface normal → attach → mirror player hand. Recall retracts. If arm hits object, auto-recall delivers object to player hand. (`Assets/Scripts/DAOM/`) |
 
 ### Misc
 
@@ -172,6 +177,8 @@ Other scenes: `NikoScene` (DAOM arm), `JakobScene` (environment), `Felix Scene I
 - WireEndGrabbable uses `MovePosition()` (not transform.position) while held to avoid joint chain oscillation.
 - DAOMArm uses `VectorLerp` (scale-compensated) not `Vector3.Lerp` — needed because arm parent hierarchy has non-unit scale.
 - GoGo's chest origin is `camera.position − (0, 0.3, 0)` — not a tracked bone.
+- `XRRayInteractor` on the teleport interactor must have its **Select Input** action reference cleared (set to None). If left set, XRI fires a native teleport on the same input as `TeleportationActivator`, causing a double-teleport per press.
+- `LeverGrab` no longer has an `allowedTechnique` field — all three techniques are accepted without restriction. Do not re-add a per-technique filter; the `isGrabbed` guard in `StartGrab()` already prevents double-grab.
 
 ---
 

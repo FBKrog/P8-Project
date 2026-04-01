@@ -18,13 +18,24 @@ public class TutorialObjective : MonoBehaviour
     public void ActivateIfName(string completedObjectiveName)
     {
         if (completedObjectiveName == activateOnObjective)
+        {
+            Debug.Log($"[TutorialObjective] '{gameObject.name}' — ActivateIfName matched '{completedObjectiveName}'. Activating.");
             Activate();
+        }
+        else
+        {
+            Debug.Log($"[TutorialObjective] '{gameObject.name}' — ActivateIfName ignored '{completedObjectiveName}' (waiting for '{activateOnObjective}').");
+        }
     }
 
     /// <summary>Activate immediately (skip name filter).</summary>
     public void Activate()
     {
-        if (_step >= 0) return;
+        if (_step >= 0)
+        {
+            Debug.Log($"[TutorialObjective] '{gameObject.name}' — Activate called but already active (step={_step}).");
+            return;
+        }
 
         if (tutorialManager == null)
         {
@@ -33,19 +44,27 @@ public class TutorialObjective : MonoBehaviour
         }
 
         _step = 0;
-        // No longer calls AdvanceToNextStep() — TutorialManager drives its own pacing via displayDuration
-        Debug.Log($"[TutorialObjective] '{gameObject.name}' activated.");
+        Debug.Log($"[TutorialObjective] '{gameObject.name}' activated. Now listening for step advances.");
     }
+
     /// <summary>
     /// Advance if the TutorialManager is currently on a step whose stepId matches id.
     /// </summary>
     public void AdvanceIfStepId(string id)
     {
-        if (_step < 0) return;
-        if (string.IsNullOrEmpty(id) || tutorialManager.CurrentStepId != id) return;
+        if (_step < 0)
+        {
+            Debug.Log($"[TutorialObjective] '{gameObject.name}' — AdvanceIfStepId('{id}') ignored: not yet activated.");
+            return;
+        }
+        if (string.IsNullOrEmpty(id) || tutorialManager.CurrentStepId != id)
+        {
+            Debug.Log($"[TutorialObjective] '{gameObject.name}' — AdvanceIfStepId('{id}') ignored: current step ID is '{tutorialManager.CurrentStepId}'.");
+            return;
+        }
 
         _step++;
+        Debug.Log($"[TutorialObjective] '{gameObject.name}' — AdvanceIfStepId('{id}') matched. Advancing tutorial (internal step now {_step}).");
         tutorialManager.AdvanceToNextStep();
-        Debug.Log($"[TutorialObjective] '{gameObject.name}' advanced on step ID '{id}' (internal step now {_step}).");
     }
 }

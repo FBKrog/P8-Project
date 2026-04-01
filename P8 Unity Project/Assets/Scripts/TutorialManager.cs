@@ -248,6 +248,7 @@ public class TutorialManager : MonoBehaviour
 
     public void StartTutorial()
     {
+        Debug.Log($"[TutorialManager] StartTutorial called. Total steps: {steps.Count}.");
         _tutorialActive   = true;
         _currentStepIndex = -1;
         AdvanceToNextStep();
@@ -265,12 +266,16 @@ public class TutorialManager : MonoBehaviour
 
         if (_currentStepIndex >= steps.Count)
         {
+            Debug.Log($"[TutorialManager] All steps complete (index {_currentStepIndex} >= count {steps.Count}). Tutorial ended.");
             _tutorialActive = false;
             HideSubtitle();
             return;
         }
 
         var step = steps[_currentStepIndex];
+        string autoStr = step.displayDuration > 0f ? $"auto-advances in {step.displayDuration}s" : "manual advance";
+        string objStr  = string.IsNullOrEmpty(step.completesObjective) ? "none" : step.completesObjective;
+        Debug.Log($"[TutorialManager] Step {_currentStepIndex}/{steps.Count - 1} — ID: '{step.stepId}' | Objective: '{objStr}' | {autoStr} | Text: \"{step.subtitleText}\"");
 
         if (!string.IsNullOrEmpty(step.completesObjective) && objectivesManager != null)
             objectivesManager.CompleteObjective(step.completesObjective);
