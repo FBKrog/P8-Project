@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit;
@@ -7,16 +8,16 @@ using UnityEngine.XR.Interaction.Toolkit.Interactors;
 using UnityEditor;
 #endif
 
-public enum ValveTechnique { Homer, GoGo, Daom }
-
 /// <summary>
 /// Valve puzzle component. Attach to a valve wheel GameObject alongside an XRGrabInteractable
 /// and a Rigidbody (kinematic — ValveGrab owns the transform).
 ///
-/// Unlike LeverGrab, the grab point is dynamic: the player grabs anywhere on the mesh.
+/// Supports grab via HOMER, Go-Go, and DAOM arm techniques. On grab, the nearest grab point
+/// (child Transform on the valve rim) is selected and the virtual hand snaps to it each frame,
+/// identical to LeverGrab's arc-lock pattern.
+///
 /// Tracks cumulative rotation about the spin axis; fires OnValveActivated once the total
-/// spin exceeds activationRotation degrees. No arc-lock — grabRefDirProjected simply
-/// updates to the current projected direction each frame.
+/// spin exceeds activationRotation degrees.
 ///
 /// cumulativeRotation persists across grabs — re-grab continues from where the player left off.
 ///
@@ -32,13 +33,13 @@ public class ValveGrab : MonoBehaviour, IRotaryGrabbable
     public XRDirectInteractor goGoInteractor;
     // DAOM resolved at runtime via DAOMArm.ActiveInstance
 
-    [Header("Allowed Technique")]
-    [Tooltip("Only grabs from this technique are accepted.")]
-    [SerializeField] private ValveTechnique allowedTechnique = ValveTechnique.Homer;
-
     [Header("Spin Axis")]
     [Tooltip("Local-space spin axis of the valve. Blue disc in Scene view should align with the valve face.")]
     public Vector3 spinAxisLocal = Vector3.up;
+
+    [Header("Grab Points")]
+    [Tooltip("Child Transforms at each physical handle on the valve rim. On grab, the nearest one is selected and the virtual hand snaps to it each frame (arc-lock). Leave empty to fall back to free-hand tracking.")]
+    [SerializeField] private List<Transform> grabPoints = new();
 
     [Header("Activation")]
     [Tooltip("Total degrees to spin before OnValveActivated fires.")]
@@ -64,11 +65,13 @@ public class ValveGrab : MonoBehaviour, IRotaryGrabbable
     private Vector3    spinWorldAxis;      // (restWorldRotation * spinAxisLocal).normalized
 
     private float   cumulativeRotation;    // total degrees spun — persists across grabs
-    private Vector3 grabRefDirProjected;   // projected hand direction from previous frame
+    private Vector3 grabRefDirProjected;   // projected reference direction from previous frame
     private bool    isFirstGrabFrame;      // skip delta on first grabbed LateUpdate
 
     private int  lockedSpinSign;           // +1 or -1 when lockSpinDirection = true
     private bool spinDirectionLocked;
+
+    private Transform activeGrabPoint;     // nearest grab point selected at StartGrab; null if none assigned
 
     private int _dbgFrame;
 
@@ -88,18 +91,21 @@ public class ValveGrab : MonoBehaviour, IRotaryGrabbable
 
         if (valveGrabbable != null)
         {
-            // ValveGrab owns the transform completely.
             valveGrabbable.trackPosition = false;
             valveGrabbable.trackRotation = false;
             valveGrabbable.throwOnDetach  = false;
             valveGrabbable.movementType  = XRBaseInteractable.MovementType.Instantaneous;
-            // Do NOT set attachTransform — default attaches at collider hit point (dynamic grab anywhere).
+
+            // If grab points are assigned, give XRI an initial attach transform so the hand
+            // snaps to the rim on grab. Updated per-grab to the nearest point in StartGrab.
+            if (grabPoints.Count > 0 && grabPoints[0] != null)
+                valveGrabbable.attachTransform = grabPoints[0];
 
             valveGrabbable.selectEntered.AddListener(OnSelectEntered);
             valveGrabbable.selectExited.AddListener(OnSelectExited);
         }
 
-        Debug.Log($"[ValveGrab:{name}] Awake — fixedPos={valveFixedPosition:F3}  spinAxisLocal={spinAxisLocal}  spinAxisWorld={spinWorldAxis:F3}");
+        Debug.Log($"[ValveGrab:{name}] Awake — fixedPos={valveFixedPosition:F3}  spinAxisLocal={spinAxisLocal}  spinAxisWorld={spinWorldAxis:F3}  grabPoints={grabPoints.Count}");
     }
 
     void OnEnable()
@@ -165,10 +171,24 @@ public class ValveGrab : MonoBehaviour, IRotaryGrabbable
         if (isFirstGrabFrame)
         {
             isFirstGrabFrame    = false;
-            grabRefDirProjected = projected.normalized;
             spinDirectionLocked = false;
-            Debug.Log($"[ValveGrab:{name}] LateUpdate FRAME-1 — reference captured  technique={activeTechnique}  ref={grabRefDirProjected:F3}  cumulative={cumulativeRotation:F1}°");
-            return; // No rotation update on first frame — reference captured.
+
+            if (activeGrabPoint != null)
+            {
+                OverrideVirtualHandPosition(activeGrabPoint.position);
+                // HOMER respects the arc-lock next frame → reference = grab point direction.
+                // GoGo/DAOM recompute from scratch next frame → reference = their actual current direction.
+                grabRefDirProjected = (activeTechnique == ActiveTechnique.Homer)
+                    ? GetActiveGrabPointDirProjected()
+                    : projected.normalized;
+            }
+            else
+            {
+                grabRefDirProjected = projected.normalized; // fallback: no grab points
+            }
+
+            Debug.Log($"[ValveGrab:{name}] LateUpdate FRAME-1 — reference captured  technique={activeTechnique}  grabPoint={(activeGrabPoint != null ? activeGrabPoint.name : "none")}  ref={grabRefDirProjected:F3}  cumulative={cumulativeRotation:F1}°");
+            return;
         }
 
         // 4. Compute angular delta since last frame.
@@ -187,14 +207,24 @@ public class ValveGrab : MonoBehaviour, IRotaryGrabbable
         }
         else
         {
-            contribution = Mathf.Abs(angleDelta); // any spin direction counts
+            contribution = Mathf.Abs(angleDelta);
         }
 
         cumulativeRotation += contribution;
         transform.rotation  = Quaternion.AngleAxis(cumulativeRotation, spinWorldAxis) * restWorldRotation;
 
-        // 6. Update reference (NO arc-lock — hand position is NOT overridden).
-        grabRefDirProjected = projected.normalized;
+        // 6. Arc-lock: snap virtual hand back to active grab point, then update reference.
+        if (activeGrabPoint != null)
+        {
+            OverrideVirtualHandPosition(activeGrabPoint.position);
+            grabRefDirProjected = (activeTechnique == ActiveTechnique.Homer)
+                ? GetActiveGrabPointDirProjected()
+                : projected.normalized;
+        }
+        else
+        {
+            grabRefDirProjected = projected.normalized; // fallback: no grab points
+        }
 
         _dbgFrame++;
         if (_dbgFrame % 10 == 0)
@@ -224,11 +254,6 @@ public class ValveGrab : MonoBehaviour, IRotaryGrabbable
         if (obj != gameObject)
         {
             Debug.Log($"[ValveGrab:{name}] OnHomerGrabStarted — ignored (grabbed '{obj?.name}', not this valve)");
-            return;
-        }
-        if (allowedTechnique != ValveTechnique.Homer)
-        {
-            Debug.Log($"[ValveGrab:{name}] OnHomerGrabStarted — skipped (allowedTechnique={allowedTechnique})");
             return;
         }
         Debug.Log($"[ValveGrab:{name}] OnHomerGrabStarted — matched, calling StartGrab(Homer)");
@@ -261,15 +286,13 @@ public class ValveGrab : MonoBehaviour, IRotaryGrabbable
         ActiveTechnique technique = ActiveTechnique.None;
         string interName = args.interactorObject?.transform?.name ?? "null";
 
-        if (allowedTechnique == ValveTechnique.GoGo &&
-            goGoInteractor != null &&
+        if (goGoInteractor != null &&
             args.interactorObject as XRDirectInteractor == goGoInteractor)
         {
             technique = ActiveTechnique.GoGo;
             Debug.Log($"[ValveGrab:{name}] OnSelectEntered — matched GoGo interactor '{interName}'");
         }
-        else if (allowedTechnique == ValveTechnique.Daom &&
-                 DAOMArm.ActiveInstance != null &&
+        else if (DAOMArm.ActiveInstance != null &&
                  args.interactorObject as XRDirectInteractor == DAOMArm.ActiveInstance.Interactor)
         {
             technique = ActiveTechnique.Daom;
@@ -277,8 +300,7 @@ public class ValveGrab : MonoBehaviour, IRotaryGrabbable
         }
         else
         {
-            Debug.Log($"[ValveGrab:{name}] OnSelectEntered — ignored " +
-                      $"(allowedTechnique={allowedTechnique}, interactor='{interName}')");
+            Debug.Log($"[ValveGrab:{name}] OnSelectEntered — ignored (interactor='{interName}')");
         }
 
         if (technique != ActiveTechnique.None)
@@ -318,7 +340,12 @@ public class ValveGrab : MonoBehaviour, IRotaryGrabbable
 
         transform.position = valveFixedPosition;
 
-        Debug.Log($"[ValveGrab:{name}] StartGrab — technique={technique}  cumulativeRotation={cumulativeRotation:F1}°");
+        // Select nearest grab point and update XRI attach transform so the hand snaps to the rim.
+        activeGrabPoint = FindNearestGrabPoint();
+        if (activeGrabPoint != null && valveGrabbable != null)
+            valveGrabbable.attachTransform = activeGrabPoint;
+
+        Debug.Log($"[ValveGrab:{name}] StartGrab — technique={technique}  grabPoint={activeGrabPoint?.name ?? "none"}  cumulativeRotation={cumulativeRotation:F1}°");
     }
 
     private void EndGrab()
@@ -329,6 +356,7 @@ public class ValveGrab : MonoBehaviour, IRotaryGrabbable
 
         isGrabbed       = false;
         activeTechnique = ActiveTechnique.None;
+        activeGrabPoint = null;
     }
 
     private void ForceRelease()
@@ -340,12 +368,13 @@ public class ValveGrab : MonoBehaviour, IRotaryGrabbable
 
         isGrabbed       = false;  // guard against re-entry FIRST
         activeTechnique = ActiveTechnique.None;
+        activeGrabPoint = null;
 
         switch (technique)
         {
             case ActiveTechnique.Homer:
                 Debug.Log($"[ValveGrab:{name}] ForceRelease — calling homer.EndGrab()");
-                homer?.EndGrab();
+                if (homer != null) homer.EndGrab();
                 break;
 
             case ActiveTechnique.GoGo:
@@ -377,20 +406,67 @@ public class ValveGrab : MonoBehaviour, IRotaryGrabbable
 
     // ── Helpers ────────────────────────────────────────────────────────────
 
+    /// <summary>Returns the nearest grab point to the current virtual hand position.</summary>
+    private Transform FindNearestGrabPoint()
+    {
+        if (grabPoints.Count == 0) return null;
+        Vector3 handPos = GetVirtualHandPosition();
+        if (handPos == Vector3.zero) return grabPoints[0];
+
+        Transform nearest  = null;
+        float     bestDist = float.MaxValue;
+        foreach (var pt in grabPoints)
+        {
+            if (pt == null) continue;
+            float d = Vector3.Distance(handPos, pt.position);
+            if (d < bestDist) { bestDist = d; nearest = pt; }
+        }
+        return nearest;
+    }
+
+    /// <summary>Returns the projected direction from the valve pivot to the active grab point.</summary>
+    private Vector3 GetActiveGrabPointDirProjected()
+    {
+        if (activeGrabPoint == null) return grabRefDirProjected;
+        Vector3 d = Vector3.ProjectOnPlane(activeGrabPoint.position - transform.position, spinWorldAxis);
+        return d.sqrMagnitude > 1e-6f ? d.normalized : grabRefDirProjected;
+    }
+
     private Vector3 GetVirtualHandPosition()
     {
         switch (activeTechnique)
         {
             case ActiveTechnique.Homer:
-                return homer?.VirtualHand != null ? homer.VirtualHand.position : Vector3.zero;
+                return homer != null && homer.VirtualHand != null ? homer.VirtualHand.position : Vector3.zero;
             case ActiveTechnique.GoGo:
-                return goGoExtend?.VirtualHand != null ? goGoExtend.VirtualHand.position : Vector3.zero;
+                return goGoExtend != null && goGoExtend.VirtualHand != null ? goGoExtend.VirtualHand.position : Vector3.zero;
             case ActiveTechnique.Daom:
-                return DAOMArm.ActiveInstance?.DaomIKTarget != null
-                    ? DAOMArm.ActiveInstance.DaomIKTarget.position
+                var daomInst = DAOMArm.ActiveInstance;
+                return daomInst != null && daomInst.DaomIKTarget != null
+                    ? daomInst.DaomIKTarget.position
                     : Vector3.zero;
             default:
                 return Vector3.zero;
+        }
+    }
+
+    private void OverrideVirtualHandPosition(Vector3 position)
+    {
+        switch (activeTechnique)
+        {
+            case ActiveTechnique.Homer:
+                if (homer?.VirtualHand != null)
+                    homer.VirtualHand.position = position;
+                break;
+            case ActiveTechnique.GoGo:
+                if (goGoExtend?.VirtualHand != null)
+                    goGoExtend.VirtualHand.position = position;
+                break;
+            case ActiveTechnique.Daom:
+                var daomArmInst = DAOMArm.ActiveInstance;
+                if (daomArmInst != null && daomArmInst.DaomIKTarget != null)
+                    daomArmInst.DaomIKTarget.position = position;
+                break;
         }
     }
 
@@ -408,6 +484,11 @@ public class ValveGrab : MonoBehaviour, IRotaryGrabbable
         // Blue disc (transparent): valve rotation plane (face of wheel).
         Handles.color = new Color(0f, 0.5f, 1f, 0.3f);
         Handles.DrawWireDisc(pivotPos, axisWorld, radius);
+
+        // White spheres: grab points on the valve rim.
+        Gizmos.color = Color.white;
+        foreach (var pt in grabPoints)
+            if (pt != null) Gizmos.DrawWireSphere(pt.position, 0.03f);
 
         // Yellow: required rotation zone.
         Vector3 perpendicular = Vector3.Cross(axisWorld, Vector3.up);

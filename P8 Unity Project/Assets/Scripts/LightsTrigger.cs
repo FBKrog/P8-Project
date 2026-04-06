@@ -5,6 +5,8 @@ public class LightsTrigger : MonoBehaviour
 {
     [SerializeField] private List<Light> lights = new();
 
+    private void Awake() => Disable();
+
     public void Enable()
     {
         foreach (var light in lights)
