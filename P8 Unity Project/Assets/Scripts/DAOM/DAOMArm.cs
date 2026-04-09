@@ -44,6 +44,13 @@ public class DAOMArm : MonoBehaviour
     [Header("Interactor")]
     [SerializeField] XRDirectInteractor interactor;
 
+    [Header("Audio")]
+    [SerializeField] AudioClip boomSound;
+    [SerializeField] [Range(0, 1)] float boomVolume = 0.5f;
+    [SerializeField] AudioClip rocketSound;
+    [SerializeField] [Range(0, 1)] float rocketVolume = 0.5f;
+    AudioSource rocketAudioSource;
+
     Quaternion targetRot;
     GameObject lookReference;
 
@@ -55,7 +62,7 @@ public class DAOMArm : MonoBehaviour
 
     IXRSelectInteractable selectedInteractable;
     IXRSelectInteractable hitInteractable;
-
+    [Header("Debug")]
     [SerializeField]bool isTraveling = false;
     [SerializeField]bool isAttachedToSurface = false;
     public bool IsAttachedToSurface => isAttachedToSurface;
@@ -144,6 +151,9 @@ public class DAOMArm : MonoBehaviour
             rotationStartTime = 1; // Don't start rotating until the object is grabbed.
         }
         StartCoroutine(TravelToPoint(transform, point));
+        
+        AudioManager.PlaySound(boomSound, transform, boomVolume);
+        rocketAudioSource = AudioManager.PlayLoopSound(rocketSound, transform, rocketVolume, true);
     }
 
     /// <summary>
@@ -156,6 +166,9 @@ public class DAOMArm : MonoBehaviour
         if (recalling) return;
         
         recalling = true;
+        
+        AudioManager.PlaySound(boomSound, transform, boomVolume);
+        rocketAudioSource = AudioManager.PlayLoopSound(rocketSound, transform, rocketVolume, true);
 
         thruster.SetActive(true);
         littleExtraBit.SetActive(false);
@@ -310,8 +323,9 @@ public class DAOMArm : MonoBehaviour
     {
         isTraveling = false;
         isAttachedToSurface = true;
-        
-        if(mirror)
+        AudioManager.StopSound(rocketAudioSource);
+
+        if (mirror)
             targetRot = LookDirection(lookReference.transform.position) * Quaternion.AngleAxis(-90, Vector3.up);
         else
             targetRot = LookDirection(lookReference.transform.position) * Quaternion.AngleAxis(-90, Vector3.up);

@@ -382,6 +382,10 @@ MonoBehaviour:
   littleExtraBit: {fileID: 132302967242953927}
   wallDistanceOffset: 0.6
   interactor: {fileID: 3938603872344463756}
+  boomSound: {fileID: 8300000, guid: 16fba6d30ed741d4a9fdd6e79ee2f3ac, type: 3}
+  boomVolume: 0.5
+  rocketSound: {fileID: 8300000, guid: 7f2a71db2fb51714e9fd4efee991fa77, type: 3}
+  rocketVolume: 0.5
   isTraveling: 0
   isAttachedToSurface: 0
 --- !u!114 &593800909442582437
