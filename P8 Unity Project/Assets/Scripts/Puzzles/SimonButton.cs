@@ -68,6 +68,8 @@ public class SimonButton : MonoBehaviour, IRotaryGrabbable
 
     private MaterialPropertyBlock _mpb;
     private static readonly int EmissionColorID = Shader.PropertyToID("_EmissionColor");
+    private static readonly int BaseColorID     = Shader.PropertyToID("_BaseColor");
+    private Color _originalBaseColor;
 
     // ── Lifecycle ──────────────────────────────────────────────────────────────
 
@@ -75,6 +77,10 @@ public class SimonButton : MonoBehaviour, IRotaryGrabbable
     {
         buttonRb = GetComponent<Rigidbody>();
         buttonGrabbable = GetComponent<XRGrabInteractable>();
+
+        // Cache base colour before any property-block overrides are applied.
+        if (buttonRenderer != null)
+            _originalBaseColor = buttonRenderer.sharedMaterial.GetColor(BaseColorID);
 
         // Cache rest state before anything can move the button.
         _restLocalPos        = transform.localPosition;
@@ -181,7 +187,7 @@ public class SimonButton : MonoBehaviour, IRotaryGrabbable
 
     // ── Public API (called by SimonSaysPuzzle) ─────────────────────────────────
 
-    /// <summary>Sets emission color on buttonRenderer and optional buttonLight.</summary>
+    /// <summary>Sets emission color on buttonRenderer and optional buttonLight (used for sequence display flash).</summary>
     public void SetLightState(Color color, bool on)
     {
         if (buttonRenderer != null)
@@ -194,6 +200,27 @@ public class SimonButton : MonoBehaviour, IRotaryGrabbable
         if (buttonLight != null)
         {
             buttonLight.color = color;
+            buttonLight.enabled = on;
+        }
+    }
+
+    /// <summary>
+    /// Blends the button's base material colour toward <paramref name="color"/> by
+    /// <paramref name="alpha"/>, creating a low-opacity overlay on top of the base material.
+    /// Call with <paramref name="on"/>=false to restore the original base colour.
+    /// </summary>
+    public void SetOverlay(Color color, float alpha, bool on)
+    {
+        if (buttonRenderer != null)
+        {
+            buttonRenderer.GetPropertyBlock(_mpb);
+            _mpb.SetColor(BaseColorID, on ? Color.Lerp(_originalBaseColor, color, alpha) : _originalBaseColor);
+            buttonRenderer.SetPropertyBlock(_mpb);
+        }
+
+        if (buttonLight != null)
+        {
+            buttonLight.color  = color;
             buttonLight.enabled = on;
         }
     }

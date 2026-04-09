@@ -24,21 +24,22 @@ public class SimonSaysPuzzle : MonoBehaviour
     [SerializeField] private int[] sequence;
 
     [Header("Colors")]
-    [SerializeField] private Color sequenceColor  = Color.cyan;
-    [Tooltip("Dim highlight shown on sequence buttons while the player is expected to press them.")]
-    [SerializeField] private Color activeColor    = new Color(0.2f, 0.2f, 0.2f);
-    [SerializeField] private Color correctColor   = Color.green;
-    [SerializeField] private Color wrongColor     = Color.red;
-    [Tooltip("Off / dark state.")]
-    [SerializeField] private Color idleColor      = Color.black;
+    [Tooltip("Emission colour flashed on each button during the sequence preview.")]
+    [SerializeField] private Color sequenceColor = Color.cyan;
+    [Tooltip("Overlay colour blended on top of the base material for a correct press / puzzle complete.")]
+    [SerializeField] private Color correctColor = Color.green;
+    [Tooltip("Overlay colour blended on top of the base material on a wrong press.")]
+    [SerializeField] private Color wrongColor = Color.red;
+    [Tooltip("How strongly the correct/wrong overlay blends over the base material (0 = invisible, 1 = solid).")]
+    [SerializeField][Range(0f, 1f)] private float overlayAlpha = 0.4f;
 
     [Header("Timing")]
     [Tooltip("Seconds each button stays lit during the sequence preview.")]
     [SerializeField] private float sequenceShowDuration = 0.8f;
     [Tooltip("Gap between sequence button flashes.")]
-    [SerializeField] private float sequenceGapDuration  = 0.3f;
+    [SerializeField] private float sequenceGapDuration = 0.3f;
     [Tooltip("Seconds all buttons flash red after a wrong-order press.")]
-    [SerializeField] private float wrongFlashDuration   = 1.2f;
+    [SerializeField] private float wrongFlashDuration = 1.2f;
 
     [Header("Events")]
     public UnityEvent OnPuzzleCompleted;
@@ -47,7 +48,7 @@ public class SimonSaysPuzzle : MonoBehaviour
     private enum PuzzleState { Idle, ShowingSequence, WaitingForInput, WrongInput, Completed }
     private PuzzleState state = PuzzleState.Idle;
 
-    private int       currentStep;
+    private int currentStep;
     private Coroutine activeCoroutine;
 
     // Pre-allocated per-button listeners capturing index by value.
@@ -66,9 +67,9 @@ public class SimonSaysPuzzle : MonoBehaviour
             _buttonListeners[i] = () => OnButtonPressed(capturedIndex);
         }
 
-        // All buttons start disabled and unlit.
+        // All buttons start disabled, showing only their base material.
         SetAllButtonsInteractable(false);
-        SetAllButtonsLight(idleColor, false);
+        ResetAllButtons();
     }
 
     void OnDestroy()
@@ -101,7 +102,7 @@ public class SimonSaysPuzzle : MonoBehaviour
         state = PuzzleState.ShowingSequence;
 
         SetAllButtonsInteractable(false);
-        SetAllButtonsLight(idleColor, false);
+        ResetAllButtons();
 
         for (int i = 0; i < sequence.Length; i++)
         {
@@ -114,18 +115,15 @@ public class SimonSaysPuzzle : MonoBehaviour
 
             buttons[idx].SetLightState(sequenceColor, true);
             yield return new WaitForSeconds(sequenceShowDuration);
-            buttons[idx].SetLightState(idleColor, false);
+            buttons[idx].SetLightState(Color.black, false); // back to base material
 
             if (i < sequence.Length - 1)
                 yield return new WaitForSeconds(sequenceGapDuration);
         }
 
-        // Enable only the buttons in the sequence; set them to the active (dim) color.
+        // Enable sequence buttons — no colour change, base material is the "ready" state.
         for (int i = 0; i < sequence.Length; i++)
-        {
             buttons[sequence[i]].SetInteractable(true);
-            buttons[sequence[i]].SetLightState(activeColor, true);
-        }
 
         currentStep = 0;
         SubscribeToSequenceButtons();
@@ -141,12 +139,12 @@ public class SimonSaysPuzzle : MonoBehaviour
         // Disable all buttons immediately (synchronous, before any yield).
         SetAllButtonsInteractable(false);
 
-        // Flash all 9 red.
-        SetAllButtonsLight(wrongColor, true);
+        // Overlay all 9 with wrong colour.
+        SetAllButtonsOverlay(wrongColor, overlayAlpha, true);
         yield return new WaitForSeconds(wrongFlashDuration);
 
-        // Extinguish and reset.
-        SetAllButtonsLight(idleColor, false);
+        // Extinguish and reset to base material.
+        ResetAllButtons();
 
         // Unlock and snap back any buttons that were locked in a correct-press state.
         for (int i = 0; i < buttons.Length; i++)
@@ -171,13 +169,15 @@ public class SimonSaysPuzzle : MonoBehaviour
 
         if (buttonIndex == expectedIndex)
         {
-            // Correct press.
+            // Correct press — overlay this button with the correct colour.
             buttons[buttonIndex].LockPressed();
-            buttons[buttonIndex].SetLightState(correctColor, true);
+            buttons[buttonIndex].SetOverlay(correctColor, overlayAlpha, true);
             currentStep++;
 
             if (currentStep >= sequence.Length)
             {
+                // Puzzle complete — overlay ALL buttons with the correct colour.
+                SetAllButtonsOverlay(correctColor, overlayAlpha, true);
                 UnsubscribeFromAllButtons();
                 state = PuzzleState.Completed;
                 Debug.Log($"[SimonSaysPuzzle:{name}] Puzzle completed — firing OnPuzzleCompleted.");
@@ -222,6 +222,19 @@ public class SimonSaysPuzzle : MonoBehaviour
     {
         foreach (var btn in buttons)
             if (btn != null) btn.SetLightState(color, on);
+    }
+
+    private void SetAllButtonsOverlay(Color color, float alpha, bool on)
+    {
+        foreach (var btn in buttons)
+            if (btn != null) btn.SetOverlay(color, alpha, on);
+    }
+
+    /// <summary>Clears emission and overlay on all buttons, returning them to their base material.</summary>
+    private void ResetAllButtons()
+    {
+        SetAllButtonsLight(Color.black, false);
+        SetAllButtonsOverlay(Color.black, 0f, false);
     }
 
     private void SetAllButtonsInteractable(bool interactable)
