@@ -18,9 +18,11 @@ public class DoorLinker : MonoBehaviour
     [SerializeField] private List<DoorTrigger> triggers = new();
 
     [Header("Door Panels")]
-    [Tooltip("Left door panel. Auto-found as first child of the 'Door' tagged object if left empty.")]
+    [Tooltip("The door transform to slide (and all its children will move with it). " +
+             "Leave empty to auto-find the 'Door' tagged object, or falls back to this GameObject.")]
     [SerializeField] private Transform leftPanel;
-    [Tooltip("Right door panel. Auto-found as second child of the 'Door' tagged object if left empty.")]
+    [Tooltip("Second panel for split/double doors — slides in the NEGATIVE slideAxis direction. " +
+             "Leave empty for a single-door that slides as one unit.")]
     [SerializeField] private Transform rightPanel;
 
     [Header("Slide Settings")]
@@ -33,31 +35,27 @@ public class DoorLinker : MonoBehaviour
 
     [Header("Events")]
     public UnityEvent OnDoorOpened;
-    
+
     private bool _isOpen = false;
 
     // -------------------------------------------------------------------------
 
     private void Start()
     {
-        if (leftPanel == null || rightPanel == null)
+        if (leftPanel == null)
         {
+            // Try to find a Door-tagged object and slide its whole transform (children follow).
             GameObject doorObj = GameObject.FindGameObjectWithTag("Door");
             if (doorObj != null)
             {
-                if (doorObj.transform.childCount >= 2)
-                {
-                    if (leftPanel  == null) leftPanel  = doorObj.transform.GetChild(0);
-                    if (rightPanel == null) rightPanel = doorObj.transform.GetChild(1);
-                }
-                else
-                {
-                    Debug.LogWarning("[DoorLinker] 'Door' object needs at least two children (left and right panels).");
-                }
+                leftPanel = doorObj.transform;
             }
             else
             {
-                Debug.LogWarning("[DoorLinker] No GameObject tagged 'Door' found.");
+                // Fall back: slide this GameObject itself so placing DoorLinker directly
+                // on the door object requires no manual panel assignment.
+                leftPanel = transform;
+                Debug.LogWarning("[DoorLinker] No 'Door' tagged object found — sliding this GameObject.");
             }
         }
 
@@ -79,6 +77,21 @@ public class DoorLinker : MonoBehaviour
 
     // -------------------------------------------------------------------------
 
+    [ContextMenu("Fire Door Trigger")]
+    private void TestFireDoor()
+    {
+        if (!Application.isPlaying)
+        {
+            Debug.LogWarning("[DoorLinker] Fire Door Trigger only works in Play mode.");
+            return;
+        }
+        if (!_isOpen)
+        {
+            StartCoroutine(SlideDoor());
+            OnDoorOpened.Invoke();
+        }
+    }
+
     private void CheckAndOpen()
     {
         if (_isOpen) return;
@@ -98,23 +111,28 @@ public class DoorLinker : MonoBehaviour
     {
         _isOpen = true;
 
-        Vector3 leftStart  = leftPanel.localPosition;
-        Vector3 rightStart = rightPanel.localPosition;
-        Vector3 axis       = slideAxis.normalized;
-        Vector3 leftEnd    = leftStart  - axis * slideDistance;
-        Vector3 rightEnd   = rightStart + axis * slideDistance;
+        Vector3 axis = slideAxis.normalized;
+        Vector3 leftStart = leftPanel.localPosition;
+        Vector3 leftEnd = rightPanel != null
+            ? leftStart - axis * slideDistance   // two-panel: left moves negative
+            : leftStart + axis * slideDistance;  // single-panel: moves positive
+
+        Vector3 rightStart = rightPanel != null ? rightPanel.localPosition : Vector3.zero;
+        Vector3 rightEnd = rightPanel != null ? rightStart + axis * slideDistance : Vector3.zero;
 
         float elapsed = 0f;
         while (elapsed < slideDuration)
         {
             elapsed += Time.deltaTime;
             float t = Mathf.SmoothStep(0f, 1f, elapsed / slideDuration);
-            leftPanel.localPosition  = Vector3.Lerp(leftStart,  leftEnd,  t);
-            rightPanel.localPosition = Vector3.Lerp(rightStart, rightEnd, t);
+            leftPanel.localPosition = Vector3.Lerp(leftStart, leftEnd, t);
+            if (rightPanel != null)
+                rightPanel.localPosition = Vector3.Lerp(rightStart, rightEnd, t);
             yield return null;
         }
 
-        leftPanel.localPosition  = leftEnd;
-        rightPanel.localPosition = rightEnd;
+        leftPanel.localPosition = leftEnd;
+        if (rightPanel != null)
+            rightPanel.localPosition = rightEnd;
     }
 }

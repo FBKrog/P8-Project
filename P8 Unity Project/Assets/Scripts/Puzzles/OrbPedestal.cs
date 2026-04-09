@@ -70,3 +70,21 @@ public class OrbPedestal : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, snapRadius);
     }
 }
+
+#if UNITY_EDITOR
+[UnityEditor.CustomEditor(typeof(OrbPedestal))]
+public class OrbPedestalEditor : UnityEditor.Editor
+{
+    public override void OnInspectorGUI()
+    {
+        DrawDefaultInspector();
+
+        UnityEditor.EditorGUILayout.Space();
+        if (GUILayout.Button("Fire OrbPlaced (Test)"))
+        {
+            var pedestal = (OrbPedestal)target;
+            pedestal.OrbPlaced.Invoke();
+        }
+    }
+}
+#endif
