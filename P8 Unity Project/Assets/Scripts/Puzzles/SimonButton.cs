@@ -134,7 +134,7 @@ public class SimonButton : MonoBehaviour, IRotaryGrabbable
     {
         // Track parent movement (e.g. a sliding door) each frame, but only while not
         // grabbed — XRI reparents on grab, which would corrupt the value.
-        if (!isGrabbed && !isLocked)
+        if (!isGrabbed)
             buttonFixedWorldPos = transform.parent != null
                 ? transform.parent.TransformPoint(_restLocalPos)
                 : transform.position;
