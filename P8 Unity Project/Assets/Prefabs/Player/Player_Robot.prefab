@@ -3503,7 +3503,7 @@ MonoBehaviour:
     m_Bits: 769
   boomEffect: {fileID: 838383737247469290, guid: ada0bdb65a03c644889c45f35aef6a60, type: 3}
   armRoot: {fileID: 1163203054149219590}
-  armIKTarget: {fileID: 5075559601168966818}
+  armXRTarget: {fileID: 5075559601168966818}
   armGameObject: {fileID: 4906278380705413472}
   daomArmPrefab: {fileID: 4734547325161131941, guid: 9bda9f90f53ce91438af1bbc02ad33f5, type: 3}
   launchPoint: {fileID: 7253741170936662748}

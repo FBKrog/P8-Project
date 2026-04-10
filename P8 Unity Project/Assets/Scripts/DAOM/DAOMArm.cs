@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using UnityEngine;
+using UnityEngine.Animations.Rigging;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
@@ -11,14 +12,12 @@ public class DAOMArm : MonoBehaviour
     public XRDirectInteractor Interactor => interactor;
     public Transform DaomIKTarget => daomIKTarget.transform;
 
-    [Header("Player")]
-    [SerializeField] GameObject playerRoot;
-    [SerializeField] GameObject playerIKTarget; // Called player hand in comments for readability
+    [HideInInspector] GameObject playerRoot;
+    [HideInInspector] GameObject playerXRTarget; // Called player hand in comments for readability
 
     [Header("DAOM")]
-    [SerializeField] Animator RigAnimator;
+    [SerializeField] Animator animator;
     [SerializeField] GameObject daomRoot;
-    //[SerializeField] GameObject extendedArmPart;
     [SerializeField] GameObject upperArm;
     [SerializeField] GameObject lowerArm;
     [SerializeField] GameObject tip;
@@ -125,16 +124,17 @@ public class DAOMArm : MonoBehaviour
     /// </summary>
     public void Initialize(GameObject root, GameObject IKTarget, Vector3 point, IXRSelectInteractable hitInteractable = null, IXRSelectInteractable interactable = null)
     {
-        lowerArm.transform.localPosition = lowerArmRetraction;
+        animator.enabled = false;
+        GetComponent<LimbStretch>().enabled = false; // Disable limb stretch during recall to prevent weird positioning of the arm.
+
         thruster.SetActive(true);
         wallExtention.SetActive(false);
 
         playerCamera = Camera.main.gameObject;
 
         playerRoot = root;
-        playerIKTarget = IKTarget;
+        playerXRTarget = IKTarget;
 
-        RigAnimator.enabled = false;
         
         upperArmStartRot = upperArm.transform.localRotation;
         lowerArmStartRot = lowerArm.transform.localRotation;
@@ -152,7 +152,8 @@ public class DAOMArm : MonoBehaviour
             rotationStartTime = 1; // Don't start rotating until the object is grabbed.
         }
         StartCoroutine(TravelToPoint(transform, point));
-        
+        lowerArm.transform.localPosition = lowerArmRetraction;
+
         AudioManager.PlaySound(boomSound, transform, boomVolume);
         rocketAudioSource = AudioManager.PlayLoopSound(rocketSound, transform, rocketVolume, true);
     }
@@ -177,7 +178,7 @@ public class DAOMArm : MonoBehaviour
 
         dumbfix = 0;
         
-        RigAnimator.enabled = false;
+        animator.enabled = false;
 
         interactor.selectActionTrigger = XRBaseInputInteractor.InputTriggerType.Sticky;
         
@@ -193,11 +194,11 @@ public class DAOMArm : MonoBehaviour
         StartCoroutine(RotateToTargetRotation(transform, targetRot, rotationDuration));
 
         StartCoroutine(RotateToTargetRotation(upperArm.transform, upperArmStartRot, rotationDuration, true));
-
-        StartCoroutine(RotateToTargetRotation(lowerArm.transform, lowerArmStartRot, rotationDuration, true));
-
-        StartCoroutine(RotateToTargetRotation(tip.transform, tipStartRot, rotationDuration, true));
         
+        StartCoroutine(RotateToTargetRotation(lowerArm.transform, lowerArmStartRot, rotationDuration, true));
+        
+        StartCoroutine(RotateToTargetRotation(tip.transform, tipStartRot, rotationDuration, true));
+
         StartCoroutine(TravelToGameObject(goPoint));
     }
 
@@ -213,13 +214,22 @@ public class DAOMArm : MonoBehaviour
             var elapsedTime = 0f;
             while (true)
             {
+                print(transform.localPosition);
                 elapsedTime += Time.deltaTime;
                 if(recalling)
+                {
                     t = Mathf.Clamp01(elapsedTime / retractionTime); // Cool little retraction for the arm when recalling
+                    transform.localPosition = Vector3.Lerp(startRot, point, t);
+                }
                 else
-                    t = 1; // Instantly attach to surface
+                {
+                    transform.localPosition = point;
+                }
 
-                transform.localPosition = Vector3.Lerp(startRot, point, t);
+                if (t >= 1 || !recalling)
+                {
+                    break;
+                }
                 yield return null;
             }
         }
@@ -252,10 +262,6 @@ public class DAOMArm : MonoBehaviour
                     wallExtention.SetActive(true);
                     ArmAttaching();
                     break;
-                }
-                if (traveledDistance >= totalDistance)
-                {
-                    ArmAttaching();
                 }
                 yield return null;
             }
@@ -302,17 +308,8 @@ public class DAOMArm : MonoBehaviour
             thruster.SetActive(false);
             var rotation = Quaternion.LookRotation(-transform.forward);
             StartCoroutine(RotateToTargetRotation(transform, rotation, rotationDuration));
-            if (recalling)
-            {
-                StartCoroutine(TravelToPoint(lowerArm.transform, lowerArmRetraction, true));
-                dumbfix++;
-                return;
-            }
-            else
-            {
-                StartCoroutine(TravelToPoint(lowerArm.transform, lowerArmExtention, true));
-                dumbfix++;
-            }
+            StartCoroutine(TravelToPoint(lowerArm.transform, recalling == true ? lowerArmRetraction : lowerArmExtention, true));
+            dumbfix++;
         }
     }
 
@@ -323,6 +320,9 @@ public class DAOMArm : MonoBehaviour
     {
         isTraveling = false;
         isAttachedToSurface = true;
+        animator.enabled = true;
+        GetComponent<LimbStretch>().enabled = true;
+
         AudioManager.StopSound(rocketAudioSource);
 
         targetRot = LookDirection(playerCamera.transform.position);
@@ -337,7 +337,6 @@ public class DAOMArm : MonoBehaviour
         }
 
         interactor.selectActionTrigger = XRBaseInputInteractor.InputTriggerType.StateChange;
-        RigAnimator.enabled = true;
 
         if (recalling)
         {
@@ -398,7 +397,7 @@ public class DAOMArm : MonoBehaviour
     void TransformToPlayerHand()
     {
         // Get the position of the player hand relative to the player root, and apply that same relative position to the daom root to find the position for the daom hand.
-        var playerHandOffset = playerRoot.transform.InverseTransformPoint(playerIKTarget.transform.position);
+        var playerHandOffset = playerRoot.transform.InverseTransformPoint(playerXRTarget.transform.position);
 
         playerHandOffset.x *= -1;
         playerHandOffset.y *= -1;
@@ -415,7 +414,7 @@ public class DAOMArm : MonoBehaviour
     void RotateToPlayerHand()
     {
         // Get the rotation of the player hand relative to the player root, and apply that same relative rotation to the daom root to find the rotation for the daom hand.
-        var relativeRot = playerIKTarget.transform.localRotation * Quaternion.Euler(handRotationOffset);
+        var relativeRot = playerXRTarget.transform.localRotation * Quaternion.Euler(handRotationOffset);
 
         relativeRot.x *= -1;
         relativeRot.z *= -1;

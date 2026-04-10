@@ -18,7 +18,7 @@ public class LaunchArm : MonoBehaviour
     [Header("Firing Arm")]
     [SerializeField] GameObject boomEffect;
     [SerializeField] GameObject armRoot;
-    [SerializeField] GameObject armIKTarget;
+    [SerializeField] GameObject armXRTarget;
     [SerializeField] GameObject armGameObject;
 
     [Header("Launched Arm")]
@@ -265,7 +265,7 @@ public class LaunchArm : MonoBehaviour
             Instantiate(boomEffect, launchPoint.transform.position, rotation);
             
             daomArm = Instantiate(daomArmPrefab, launchPoint.transform.position, rotation);
-            daomArm.GetComponent<DAOMArm>().Initialize(armRoot, armIKTarget, hit.point, this.hitInteractable, selectedInteractable);
+            daomArm.GetComponent<DAOMArm>().Initialize(armRoot, armXRTarget, hit.point, this.hitInteractable, selectedInteractable);
             OnSetInteractorHandedness(interactor);
             interactor.enabled = false;
             OnArmLaunched();
