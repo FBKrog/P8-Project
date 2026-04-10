@@ -31,14 +31,14 @@ public class DAOMArm : MonoBehaviour
     [SerializeField] Vector3 lowerArmRetraction;
     [SerializeField] float retractionTime = 0.4f;
 
-    [Header("Rotation")]
+    [Header("Motion and Rotation")]
+    [SerializeField] [Tooltip("Adjust the strength of how much the DAOM arm follows the directional movement of the player's arm. 0.6 seems so be fitting for the new robot model.")] [Range(0,2)] float followStrength = 0.6f;
     [SerializeField] [Tooltip("The point in travel time the arm will rotate, normalized from percentage of traveled distance")] [Range(0,1)] float rotationStartTime = 0.8f;
     [SerializeField] [Tooltip("The time it takes the arm to rotate into place relative to the surface's normal.")] float rotationDuration = 0.5f;
-    [SerializeField] Vector3 handRotationOffset = new(180,0,90);
+    [SerializeField] Vector3 handRotationOffset = new(90,0,0);
 
     [Header("Other")]
-    [SerializeField] [Tooltip("Make the arm act as if mirrored.")] bool mirror = true;
-    [SerializeField] GameObject littleExtraBit;
+    [SerializeField] GameObject wallExtention;
     [SerializeField] [Tooltip("Only used when NOT mirrored.")] float wallDistanceOffset = 0.3f;
 
     [Header("Interactor")]
@@ -52,7 +52,7 @@ public class DAOMArm : MonoBehaviour
     AudioSource rocketAudioSource;
 
     Quaternion targetRot;
-    GameObject lookReference;
+    GameObject playerCamera;
 
     Quaternion upperArmStartRot;
     Quaternion lowerArmStartRot;
@@ -123,15 +123,16 @@ public class DAOMArm : MonoBehaviour
     /// <summary>
     /// Initializes a bunch of variables sent by the player, setting the root, IK and more. It then begins movement toward the specified point.
     /// </summary>
-    public void Initialize(GameObject root, GameObject IKTarget, Vector3 point, GameObject lookReference = null, IXRSelectInteractable hitInteractable = null, IXRSelectInteractable interactable = null)
+    public void Initialize(GameObject root, GameObject IKTarget, Vector3 point, IXRSelectInteractable hitInteractable = null, IXRSelectInteractable interactable = null)
     {
         lowerArm.transform.localPosition = lowerArmRetraction;
         thruster.SetActive(true);
-        littleExtraBit.SetActive(false);
+        wallExtention.SetActive(false);
+
+        playerCamera = Camera.main.gameObject;
 
         playerRoot = root;
         playerIKTarget = IKTarget;
-        this.lookReference = lookReference;
 
         RigAnimator.enabled = false;
         
@@ -171,7 +172,7 @@ public class DAOMArm : MonoBehaviour
         rocketAudioSource = AudioManager.PlayLoopSound(rocketSound, transform, rocketVolume, true);
 
         thruster.SetActive(true);
-        littleExtraBit.SetActive(false);
+        wallExtention.SetActive(false);
         GetComponent<LimbStretch>().enabled = false; // Disable limb stretch during recall to prevent weird positioning of the arm.
 
         dumbfix = 0;
@@ -246,9 +247,9 @@ public class DAOMArm : MonoBehaviour
                 {
                     PrepareSurfaceLanding(point);
                 }
-                if (!mirror && traveledDistance >= (totalDistance - wallDistanceOffset))
+                if (traveledDistance >= (totalDistance - wallDistanceOffset))
                 {
-                    littleExtraBit.SetActive(true);
+                    wallExtention.SetActive(true);
                     ArmAttaching();
                     break;
                 }
@@ -298,7 +299,6 @@ public class DAOMArm : MonoBehaviour
     {
         if (dumbfix < 1)
         {
-            Instantiate(new GameObject("LookReference"), point, Quaternion.identity);
             thruster.SetActive(false);
             var rotation = Quaternion.LookRotation(-transform.forward);
             StartCoroutine(RotateToTargetRotation(transform, rotation, rotationDuration));
@@ -325,10 +325,7 @@ public class DAOMArm : MonoBehaviour
         isAttachedToSurface = true;
         AudioManager.StopSound(rocketAudioSource);
 
-        if (mirror)
-            targetRot = LookDirection(lookReference.transform.position) * Quaternion.AngleAxis(-90, Vector3.up);
-        else
-            targetRot = LookDirection(lookReference.transform.position) * Quaternion.AngleAxis(-90, Vector3.up);
+        targetRot = LookDirection(playerCamera.transform.position);
 
         // If the arm hit an interactable, recall the arm WITH the interactable so the player holds it after recall.
         if (hitInteractable != null && !recalling)
@@ -405,27 +402,11 @@ public class DAOMArm : MonoBehaviour
 
         playerHandOffset.x *= -1;
         playerHandOffset.y *= -1;
-        if(mirror)
-        {
-            playerHandOffset.z *= -1;
-        }
 
-        // Original solution that doesn't compensate for scaled daom parent :( 
-        //daomIKTarget.transform.position = daomRoot.transform.TransformPoint(playerHandOffset);
+        playerHandOffset *= followStrength;
 
-        // Store the offset from the daom root to world space to find the target position for the daom hand.
-        var worldOffset = daomRoot.transform.rotation * playerHandOffset;
-
-        // Compensate for scaled parent hierarchy (VERY BAD BTW)
-        var parentScale = daomIKTarget.transform.parent.lossyScale;
-
-        worldOffset = new Vector3(
-            worldOffset.x / parentScale.x,
-            worldOffset.y / parentScale.y,
-            worldOffset.z / parentScale.z
-            );
-
-        daomIKTarget.transform.position = daomRoot.transform.position + worldOffset;
+        // Apply the relative position to the daom root to find the target position for the daom hand.
+        daomIKTarget.transform.position = daomRoot.transform.TransformPoint(playerHandOffset);
     }
 
     /// <summary>
@@ -434,19 +415,13 @@ public class DAOMArm : MonoBehaviour
     void RotateToPlayerHand()
     {
         // Get the rotation of the player hand relative to the player root, and apply that same relative rotation to the daom root to find the rotation for the daom hand.
-        var relativeRot = playerIKTarget.transform.localRotation * Quaternion.AngleAxis(180, lookReference.transform.up) * Quaternion.Euler(handRotationOffset);
+        var relativeRot = playerIKTarget.transform.localRotation * Quaternion.Euler(handRotationOffset);
 
-        if(mirror)
-        { 
-            relativeRot *= Quaternion.Inverse(playerRoot.transform.localRotation) * Quaternion.AngleAxis(180, Vector3.right);
-        }
-        else
-        {
-            relativeRot.x *= -1;
-            relativeRot.z *= -1;
-            relativeRot *= playerRoot.transform.localRotation;
-        }
+        relativeRot.x *= -1;
+        relativeRot.z *= -1;
+        relativeRot *= playerRoot.transform.localRotation;
+        
         // Apply the relative rotation to the daom root to find the target rotation for the daom hand.
-        daomIKTarget.transform.rotation = daomRoot.transform.localRotation * relativeRot;
+        daomIKTarget.transform.rotation = relativeRot;
     }
 }

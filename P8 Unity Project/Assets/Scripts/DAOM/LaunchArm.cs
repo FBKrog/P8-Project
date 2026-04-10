@@ -40,7 +40,7 @@ public class LaunchArm : MonoBehaviour
     [Header("Line Renderer")]
     [SerializeField] Material validTarget;
     [SerializeField] Material invalidTarget;
-    [SerializeField] GameObject holoArm;
+    //[SerializeField] GameObject holoArm;
     LineRenderer lineRenderer;
 
     IXRSelectInteractable selectedInteractable;
@@ -65,7 +65,7 @@ public class LaunchArm : MonoBehaviour
     void Awake()
     {
         lineRenderer = GetComponent<LineRenderer>();
-        holoArm.SetActive(false);
+        //holoArm.SetActive(false);
         if (camera == null)
         {
             camera = Camera.main.gameObject;
@@ -175,7 +175,7 @@ public class LaunchArm : MonoBehaviour
             daomArm = null;
             canLaunch = true;
             ForceGrabInteractable();
-            armGameObject.transform.localScale = Vector3.one;
+            armGameObject.SetActive(true);
         }
     }
 
@@ -255,7 +255,7 @@ public class LaunchArm : MonoBehaviour
                 this.hitInteractable = hitInteractable;
             }
 
-            armGameObject.transform.localScale = Vector3.zero;
+            armGameObject.SetActive(false);
 
             // Calculate the rotation for the arm to be launched at based on the hit point and the launch point and multiplying with an offset.
             var direction = (hit.point - launchPoint.transform.position).normalized;
@@ -265,7 +265,7 @@ public class LaunchArm : MonoBehaviour
             Instantiate(boomEffect, launchPoint.transform.position, rotation);
             
             daomArm = Instantiate(daomArmPrefab, launchPoint.transform.position, rotation);
-            daomArm.GetComponent<DAOMArm>().Initialize(armRoot, armIKTarget, hit.point, camera, this.hitInteractable, selectedInteractable);
+            daomArm.GetComponent<DAOMArm>().Initialize(armRoot, armIKTarget, hit.point, this.hitInteractable, selectedInteractable);
             OnSetInteractorHandedness(interactor);
             interactor.enabled = false;
             OnArmLaunched();
@@ -323,12 +323,12 @@ public class LaunchArm : MonoBehaviour
         lineRenderer.material = valid ? validTarget : invalidTarget;
     }
 
-    void SetHolographicArm(bool valid)
-    {
-        holoArm.SetActive(valid);
-        holoArm.transform.position = hit.point;
-        holoArm.transform.rotation = Quaternion.LookRotation(hit.normal);
-    }
+    //void SetHolographicArm(bool valid)
+    //{
+    //    holoArm.SetActive(valid);
+    //    holoArm.transform.position = hit.point;
+    //    holoArm.transform.rotation = Quaternion.LookRotation(hit.normal);
+    //}
 
 #if UNITY_EDITOR
     void OnDrawGizmos()

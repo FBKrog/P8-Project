@@ -11,9 +11,9 @@ public class DynamicHandAnimation : MonoBehaviour
             Debug.LogError("Hand data is not assigned or empty.");
             return;
         }
-        for (int i = 0; i < 2; i++)
+        for (int i = 0; i < handData.thumb.jointValues.Length; i++)
             handData.thumb.jointValues[i] = SetInitialPhalanx(handData.thumb.joints[i]);
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < handData.index.jointValues.Length; i++)
         {
             handData.index.jointValues[i] = SetInitialPhalanx(handData.index.joints[i]);
             handData.middle.jointValues[i] = SetInitialPhalanx(handData.middle.joints[i]);
@@ -30,9 +30,9 @@ public class DynamicHandAnimation : MonoBehaviour
 
     void Animate()
     {
-        for (int i = 0; i < 2; i++)
+        for (int i = 0; i < handData.thumb.jointValues.Length; i++)
             BendPhalanx(handData.thumb.joints[i], handData.thumb.jointValues[i]);
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < handData.index.jointValues.Length; i++)
         {
             BendPhalanx(handData.index.joints[i], handData.index.jointValues[i]);
             BendPhalanx(handData.middle.joints[i], handData.middle.jointValues[i]);

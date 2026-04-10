@@ -12,7 +12,6 @@ public class FollowXROrigin : MonoBehaviour
 
     [Header("Mapping")]
     [SerializeField] VRMap head;
-    [SerializeField] VRMap spine;
     [SerializeField] VRMap leftHand;
     [SerializeField] VRMap rightHand;
 
